@@ -1189,6 +1189,7 @@ function reloadLive() {
       btn.disabled = false;
     });
 }
+window.reloadLive = reloadLive;
 function addLog(ico, msg, isNew) {
   var ts = new Date().toLocaleTimeString('fr-FR');
   refreshLog.unshift({ts:ts, ico:ico, msg:msg, isNew:!!isNew});
@@ -1754,7 +1755,7 @@ function doPDF(themes) {
 // INIT
 // ============================================================
 
-window.reloadLive = reloadLive;
+
 rebuildAllMeta();
 buildDash();
 
