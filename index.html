@@ -159,6 +159,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#edf2f7;color:#1a284
 .badge-drees{background:#f0e8f8;color:#7a30c0;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
 .badge-insee{background:#e8f0f8;color:#3060a0;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
 
+.nav-logo{height:38px;width:auto;max-width:120px;object-fit:contain;display:block;border-radius:4px}
 .card-tooltip{display:none;position:fixed;min-width:320px;max-width:420px;background:#1a2845;color:#fff;font-size:11px;padding:13px 15px;border-radius:8px;line-height:1.5;z-index:9999;box-shadow:0 6px 28px rgba(0,0,0,.3);pointer-events:none;white-space:normal}
 .card-tooltip table{width:100%;border-collapse:collapse}
 .card-tooltip td{padding:2px 4px;font-size:10.5px}
@@ -168,7 +169,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#edf2f7;color:#1a284
 
 <div id="nav">
   <div style="display:flex;align-items:center;margin-right:16px">
-<img src="images/logocd11.png" alt="Description de l'image">
+<img class="nav-logo" src="images/logocd11.png" alt="Logo Conseil départemental de l'Aude" style="margin-right:10px">
     <div>
       <div class="brand">Observatoire Social · Aude (11)</div>
       <div class="subtitle">DREES · INSEE · CAF · Open Data Aude · v8</div>
@@ -201,9 +202,20 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:#edf2f7;color:#1a284
 <div id="nouveautes" class="section"></div>
 
 <script>
-var DREES_DATA = {"depts":{"01":"Ain","02":"Aisne","03":"Allier","04":"Alpes-de-Haute-Provence","05":"Hautes-Alpes","06":"Alpes-Maritimes","07":"Ardèche","08":"Ardennes","09":"Ariège","10":"Aube","11":"Aude","12":"Aveyron","13":"Bouches-du-Rhône","14":"Calvados","15":"Cantal","16":"Charente","17":"Charente-Maritime","18":"Cher","19":"Corrèze","21":"Côte-d'Or","22":"Côtes-d'Armor","23":"Creuse","24":"Dordogne","25":"Doubs","26":"Drôme","27":"Eure","28":"Eure-et-Loir","29":"Finistère","30":"Gard","31":"Haute-Garonne","32":"Gers","33":"Gironde","34":"Hérault","35":"Ille-et-Vilaine","36":"Indre","37":"Indre-et-Loire","38":"Isère","39":"Jura","40":"Landes","41":"Loir-et-Cher","42":"Loire","43":"Haute-Loire","44":"Loire-Atlantique","45":"Loiret","46":"Lot","47":"Lot-et-Garonne","48":"Lozère","49":"Maine-et-Loire","50":"Manche","51":"Marne","52":"Haute-Marne","53":"Mayenne","54":"Meurthe-et-Moselle","55":"Meuse","56":"Morbihan","57":"Moselle","58":"Nièvre","59":"Nord","60":"Oise","61":"Orne","62":"Pas-de-Calais","63":"Puy-de-Dôme","64":"Pyrénées-Atlantiques","65":"Hautes-Pyrénées","66":"Pyrénées-Orientales","67":"Bas-Rhin","68":"Haut-Rhin","69":"Rhône","70":"Haute-Saône","71":"Saône-et-Loire","72":"Sarthe","73":"Savoie","74":"Haute-Savoie","75":"Paris","76":"Seine-Maritime","77":"Seine-et-Marne","78":"Yvelines","79":"Deux-Sèvres","80":"Somme","81":"Tarn","82":"Tarn-et-Garonne","83":"Var","84":"Vaucluse","85":"Vendée","86":"Vienne","87":"Haute-Vienne","88":"Vosges","89":"Yonne","90":"Territoire-de-Belfort","91":"Essonne","92":"Hauts-de-Seine","93":"Seine-Saint-Denis","94":"Val-de-Marne","95":"Val-d'Oise","2A":"Corse-du-Sud","2B":"Haute-Corse","6AE":"Coll. europ. d'Alsace"};
-var DREES_META = DREES_DATA.meta;
-var DREES_SNAP = DREES_DATA.snap;
+var DREES_DEPTS = {"01":"Ain","02":"Aisne","03":"Allier","04":"Alpes-de-Haute-Provence","05":"Hautes-Alpes","06":"Alpes-Maritimes","07":"Ardèche","08":"Ardennes","09":"Ariège","10":"Aube","11":"Aude","12":"Aveyron","13":"Bouches-du-Rhône","14":"Calvados","15":"Cantal","16":"Charente","17":"Charente-Maritime","18":"Cher","19":"Corrèze","21":"Côte-d'Or","22":"Côtes-d'Armor","23":"Creuse","24":"Dordogne","25":"Doubs","26":"Drôme","27":"Eure","28":"Eure-et-Loir","29":"Finistère","30":"Gard","31":"Haute-Garonne","32":"Gers","33":"Gironde","34":"Hérault","35":"Ille-et-Vilaine","36":"Indre","37":"Indre-et-Loire","38":"Isère","39":"Jura","40":"Landes","41":"Loir-et-Cher","42":"Loire","43":"Haute-Loire","44":"Loire-Atlantique","45":"Loiret","46":"Lot","47":"Lot-et-Garonne","48":"Lozère","49":"Maine-et-Loire","50":"Manche","51":"Marne","52":"Haute-Marne","53":"Mayenne","54":"Meurthe-et-Moselle","55":"Meuse","56":"Morbihan","57":"Moselle","58":"Nièvre","59":"Nord","60":"Oise","61":"Orne","62":"Pas-de-Calais","63":"Puy-de-Dôme","64":"Pyrénées-Atlantiques","65":"Hautes-Pyrénées","66":"Pyrénées-Orientales","67":"Bas-Rhin","68":"Haut-Rhin","69":"Rhône","70":"Haute-Saône","71":"Saône-et-Loire","72":"Sarthe","73":"Savoie","74":"Haute-Savoie","75":"Paris","76":"Seine-Maritime","77":"Seine-et-Marne","78":"Yvelines","79":"Deux-Sèvres","80":"Somme","81":"Tarn","82":"Tarn-et-Garonne","83":"Var","84":"Vaucluse","85":"Vendée","86":"Vienne","87":"Haute-Vienne","88":"Vosges","89":"Yonne","90":"Territoire-de-Belfort","91":"Essonne","92":"Hauts-de-Seine","93":"Seine-Saint-Denis","94":"Val-de-Marne","95":"Val-d'Oise","2A":"Corse-du-Sud","2B":"Haute-Corse","6AE":"Coll. europ. d'Alsace"};
+
+// DREES_META / DREES_SNAP ne sont plus des blocs de chiffres figés : ils sont
+// remplis dynamiquement par loadDREES() à chaque clic sur « Recharger données ».
+var DREES_META = [];
+var DREES_SNAP = {};
+var DREES_TS   = {};   // séries temporelles : non reconstituées (voir message de session), classements/évolution DREES limités à l'existant
+var DEPTS      = DREES_DEPTS; // liste des départements : donnée administrative fixe, pas une statistique
+
+// Occitanie (13 départements) : découpage administratif officiel, fixe — ce n'est pas une donnée d'enquête à aller chercher en API
+var OCC        = ['09','11','12','30','31','32','34','46','48','65','66','81','82'];
+// « Strate » de comparaison DREES (départements de profil socio-démographique proche) : liste perdue lors du nettoyage,
+// volontairement vide plutôt que devinée — voir message de session pour la remettre correctement.
+var STRATE     = [];
 
 var INSEE_SNAP = {};
 
@@ -215,10 +227,7 @@ var INSEE_SNAP = {};
     Object.assign(DREES_SNAP[id], strateExtra[id]);
   });
 })();
-var DREES_TS   = DREES_DATA.ts;
-var DEPTS      = DREES_DATA.depts;
-var STRATE     = DREES_DATA.strate;
-var OCC        = DREES_DATA.occ;
+// (les anciens raccourcis DREES_DATA.ts / .strate / .occ / .depts sont remplacés par les constantes ci-dessus)
 
 var INSEE_META = [];
 var CAF_META  = [];
@@ -1454,121 +1463,176 @@ async function loadAude() {
     }
   }
 }
+// ============================================================
+// INSEE — PAS d'appel direct.
+// Pourquoi : les vraies données INSEE par département (population, chômage...)
+// sans clé API ne sont pas disponibles via un simple fetch() fiable depuis un
+// navigateur (l'API officielle api.insee.fr exige une clé OAuth ; l'embarquer
+// dans un fichier hébergé publiquement sur GitHub l'exposerait à tous). C'est
+// le choix qui avait été validé : dernière valeur connue, clairement étiquetée
+// « figé », plutôt qu'un faux direct qui donnerait l'illusion d'une donnée live.
+// ============================================================
 async function loadINSEE() {
-  try {
-    addLog('⏳', 'Chargement INSEE (indicateurs clés Aude 11)...');
-    
-    // Interrogation de l'API Open Data (Data.gouv / INSEE) pour le département de l'Aude
-    var url = 'https://www.data.gouv.fr/api/1/datasets/608298db393848b594ed5720/';
-    
-    var r = await fetch(url);
-    if (!r.ok) throw new Error('INSEE HTTP ' + r.status);
-    
-    var data = await r.json();
-    
-    // Définition / mise à jour des indicateurs dans INSEE_META
-    var anneeRef = '2023';
-    
-    var prevIds = (typeof INSEE_META !== 'undefined' && INSEE_META) ? INSEE_META.map(function(m){ return m.id; }) : [];
-    if (typeof INSEE_META === 'undefined') window.INSEE_META = [];
-
-    // Exemple de structure d'indicateur actualisé
-    var inseeFields = [
-      { id: 'insee_pop', label: 'Population totale (INSEE)', val: 375300, unit: 'hab.', fmt: 'int', themes: ['ages'] },
-      { id: 'insee_tx_chomage', label: 'Taux de chômage (INSEE)', val: 9.8, unit: '%', fmt: 'pct1', themes: ['financier', 'social'] }
+  addLog('ℹ️', 'INSEE : instantané figé (pas d\'appel direct, voir message de session pour le pourquoi).');
+  if (typeof INSEE_META === 'undefined' || !INSEE_META.length) {
+    window.INSEE_META = [
+      { id:'insee_pop', label:'Population totale', unit:'hab.', fmt:'int', aude:375100, annee:'2022',
+        source:'INSEE — dernière valeur connue (figé)',
+        desc:"Population totale du département de l'Aude. Valeur figée, à mettre à jour manuellement lors d'une prochaine publication INSEE.",
+        occ:null, fra:null, rank_fr:null, rank_strate:null, rank_occ:null,
+        total_fr:96, total_strate:11, total_occ:13, stats_fr:{}, stats_strate:{}, stats_occ:{}, has_ts:false, isNew:false },
+      { id:'insee_tx_chomage', label:'Taux de chômage', unit:'%', fmt:'pct1', aude:9.6, annee:'2024 T4',
+        source:'INSEE — dernière valeur connue (figé)',
+        desc:"Taux de chômage localisé du département de l'Aude. Valeur figée, à mettre à jour manuellement lors d'une prochaine publication INSEE.",
+        occ:null, fra:null, rank_fr:null, rank_strate:null, rank_occ:null,
+        total_fr:96, total_strate:11, total_occ:13, stats_fr:{}, stats_strate:{}, stats_occ:{}, has_ts:false, isNew:false }
     ];
-
-    inseeFields.forEach(function(f) {
-      var isNew = prevIds.indexOf(f.id) < 0;
-      if (isNew && prevIds.length > 0 && typeof newCount !== 'undefined') newCount++;
-
-      // Recherche si l'indicateur existe déjà dans INSEE_META
-      var existing = INSEE_META.find(function(m) { return m.id === f.id; });
-      if (existing) {
-        existing.aude = f.val;
-        existing.annee = anneeRef;
-      } else {
-        INSEE_META.push({
-          id: f.id,
-          label: f.label,
-          unit: f.unit,
-          fmt: f.fmt,
-          themes: f.themes,
-          aude: f.val,
-          occ: null, fra: null,
-          rank_fr: null, rank_strate: null, rank_occ: null,
-          total_fr: 96, total_strate: 11, total_occ: 13,
-          stats_fr: {}, stats_strate: {}, stats_occ: {},
-          has_ts: false,
-          source: 'INSEE — Recensement & Statistiques',
-          annee: anneeRef,
-          desc: 'Indicateur démographique et socio-économique INSEE pour le département de l\'Aude.',
-          isNew: isNew
-        });
-      }
-    });
-
-    addLog('✅', 'INSEE chargée avec succès (Année ' + anneeRef + ')', true);
-  } catch(e) {
-    addLog('❌', 'INSEE erreur: ' + e.message);
   }
 }
-async function loadDREES() {
-  try {
-    addLog('⏳', 'Chargement DREES (Minima sociaux & RSA 11)...');
-    
-    // API DREES officielle : Minima sociaux par département
-    var url = 'https://data.drees.solidarites-sante.gouv.fr/api/explore/v2.1/catalog/datasets/minima-sociaux-par-departement/records?where=code_departement%3D%2211%22&limit=5';
-    
-    var r = await fetch(url);
-    if (!r.ok) throw new Error('DREES HTTP ' + r.status);
-    
-    var data = await r.json();
-    if (!data.results || !data.results.length) throw new Error('DREES: 0 résultats');
 
-    var rec = data.results[0];
-    var anneeRef = rec.annee || rec.date || '2023';
+// ============================================================
+// DREES — connecteur générique (data.drees.solidarites-sante.gouv.fr)
+// Plateforme Opendatasoft (même famille que CAF / Aude). Les noms exacts des
+// colonnes ne sont pas garantis à l'avance : on les détecte automatiquement
+// via les libellés (fields[].label). Tout est journalisé dans « Nouveautés ».
+// ============================================================
+var DREES_BASE = 'https://data.drees.solidarites-sante.gouv.fr/api/explore/v2.1/catalog/datasets/';
+var DREES_DATASETS = {
+  depenses:   '376_les-depenses-d-aide-sociale-departementale',
+  financiers: '619_indicateurs-financiers',
+  enfance:    '596_enfance-et-jeunesse-en-danger'
+};
+var DREES_FIELD_CACHE = {};
 
-    // Champs DREES à transformer en indicateurs
-    var DREES_FIELDS = [
-      { key: 'eff_rsa', label: 'Allocataires RSA (DREES)', unit: 'personnes', fmt: 'int', themes: ['social', 'financier'] },
-      { key: 'eff_aah', label: 'Bénéficiaires AAH (DREES)', unit: 'personnes', fmt: 'int', themes: ['handicap'] }
-    ];
-
-    var prevIds = DREES_META ? DREES_META.map(function(m) { return m.id; }) : [];
-    if (typeof DREES_META === 'undefined') window.DREES_META = [];
-
-    DREES_FIELDS.forEach(function(f) {
-      var val = rec[f.key];
-      if (val === null || val === undefined) return;
-      
-      var idStr = 'drees_' + f.key;
-      var isNew = prevIds.indexOf(idStr) < 0;
-      if (isNew && prevIds.length > 0 && typeof newCount !== 'undefined') newCount++;
-
-      DREES_META.push({
-        id: idStr,
-        label: f.label,
-        unit: f.unit,
-        fmt: f.fmt,
-        themes: f.themes,
-        aude: val,
-        occ: null, fra: null,
-        rank_fr: null, rank_strate: null, rank_occ: null,
-        total_fr: 96, total_strate: 11, total_occ: 13,
-        stats_fr: {}, stats_strate: {}, stats_occ: {},
-        has_ts: false,
-        source: 'DREES — Minima sociaux',
-        annee: anneeRef,
-        desc: 'Donnée DREES pour le département de l\'Aude. Année de référence: ' + anneeRef + '.',
-        isNew: isNew
-      });
-    });
-
-    addLog('✅', 'DREES chargée: ' + DREES_META.length + ' indicateurs (Année ' + anneeRef + ')', true);
-  } catch(e) {
-    addLog('❌', 'DREES erreur: ' + e.message);
+function normFr(s) {
+  return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+function extractDreesFields(data) {
+  if (Array.isArray(data.fields)) return data.fields;
+  if (data.dataset && Array.isArray(data.dataset.fields)) return data.dataset.fields;
+  if (data.dataset_schema && Array.isArray(data.dataset_schema.fields)) return data.dataset_schema.fields;
+  return [];
+}
+async function getDreesFields(dsKey) {
+  if (DREES_FIELD_CACHE[dsKey]) return DREES_FIELD_CACHE[dsKey];
+  var r = await fetch(DREES_BASE + DREES_DATASETS[dsKey]);
+  if (!r.ok) throw new Error('catalogue DREES HTTP ' + r.status);
+  var fields = extractDreesFields(await r.json());
+  DREES_FIELD_CACHE[dsKey] = fields;
+  return fields;
+}
+function findDreesDim(fields, mustHave, prefer) {
+  var cands = fields.filter(function(f) {
+    var lbl = normFr(f.label || f.name);
+    return mustHave.every(function(k) { return lbl.indexOf(k) >= 0; });
+  });
+  if (prefer && cands.length > 1) {
+    var preferred = cands.filter(function(f) { return normFr(f.label || f.name).indexOf(prefer) >= 0; });
+    if (preferred.length) cands = preferred;
   }
+  return cands[0] ? cands[0].name : null;
+}
+function bestDreesField(fields, keywords, exclude) {
+  var scored = fields.map(function(f) {
+    var lbl = normFr(f.label || f.name);
+    var score = keywords.reduce(function(s, k) { return s + (lbl.indexOf(k) >= 0 ? 1 : 0); }, 0);
+    if (exclude && exclude.some(function(x) { return lbl.indexOf(x) >= 0; })) score = -99;
+    return { field: f, score: score };
+  }).filter(function(x) { return x.score > 0; }).sort(function(a, b) { return b.score - a.score; });
+  return scored[0] ? scored[0].field : null;
+}
+async function queryDreesRecord(dsKey, deptField, deptCode, yearField) {
+  var base = DREES_BASE + DREES_DATASETS[dsKey] + '/records';
+  var order = yearField ? '&order_by=' + encodeURIComponent(yearField + ' desc') : '';
+  var attempts = [
+    base + '?where=' + encodeURIComponent(deptField + '="' + deptCode + '"') + order + '&limit=1',
+    base + '?where=' + encodeURIComponent(deptField + '=' + deptCode) + order + '&limit=1'
+  ];
+  for (var i = 0; i < attempts.length; i++) {
+    try {
+      var r = await fetch(attempts[i]);
+      if (!r.ok) continue;
+      var data = await r.json();
+      if (data.results && data.results.length) return data.results[0];
+    } catch (e) { /* essai suivant */ }
+  }
+  return null;
+}
+
+// Règles indicateur ⇄ mots-clés de libellé DREES, avec la définition (métadonnée, pas une valeur)
+var DREES_RULES = [
+  { id:'ind07', ds:'depenses',   kw:['nettes','agees'],   ex:['brutes'], label:'Dépenses nettes aide aux personnes âgées', unit:'k€', fmt:'keur', themes:['ages','financier'], desc:"Dépenses nettes d'aide sociale aux personnes âgées, département de l'Aude." },
+  { id:'ind08', ds:'depenses',   kw:['brutes','apa'],                    label:'Dépenses brutes APA', unit:'k€', fmt:'keur', themes:['ages','financier'], desc:"Dépenses brutes d'Allocation Personnalisée d'Autonomie (APA), département de l'Aude." },
+  { id:'ind10', ds:'depenses',   kw:['nettes','handicap'], ex:['brutes'], label:'Dépenses nettes aide aux personnes handicapées', unit:'k€', fmt:'keur', themes:['handicap','financier'], desc:"Dépenses nettes d'aide sociale aux personnes handicapées, département de l'Aude." },
+  { id:'ind11', ds:'depenses',   kw:['brutes','pch'],                    label:'Dépenses brutes PCH', unit:'k€', fmt:'keur', themes:['handicap','financier'], desc:"Dépenses brutes de Prestation de Compensation du Handicap (PCH), département de l'Aude." },
+  { id:'ind41', ds:'financiers', kw:['rsa','habitant'],                  label:'Dépenses RSA / habitant', unit:'€', fmt:'eur0', themes:['social','financier'], desc:"Dépenses de RSA rapportées à la population du département." },
+  { id:'ind42', ds:'financiers', kw:['rsa','beneficiaire'],              label:'Dépenses RSA / bénéficiaire', unit:'€', fmt:'eur0', themes:['social','financier'], desc:"Dépenses de RSA rapportées au nombre de bénéficiaires." },
+  { id:'ind43', ds:'financiers', kw:['apa','habitant'],                  label:'Dépenses APA / habitant', unit:'€', fmt:'eur0', themes:['ages','financier'], desc:"Dépenses d'APA rapportées à la population du département." },
+  { id:'ind46', ds:'financiers', kw:['total','habitant'],                label:'Dépenses totales aide sociale / habitant', unit:'€', fmt:'eur0', themes:['financier'], desc:"Dépenses totales d'aide sociale départementale rapportées à la population." },
+  { id:'ind09', ds:'financiers', kw:['pch','beneficiaire'],              label:'Dépenses PCH / bénéficiaire', unit:'€', fmt:'eur0', themes:['handicap','financier'], desc:"Dépenses de PCH rapportées au nombre de bénéficiaires." },
+  { id:'ind31', ds:'enfance', kw:['taux','mesures'], ex:['educ','accueil','etablissement','equipement'], label:'Taux mesures ASE', unit:'‰', fmt:'dec1', themes:['ase'], desc:"Mesures d'aide sociale à l'enfance (accueil + actions éducatives) pour 1000 jeunes de moins de 21 ans." },
+  { id:'ind32', ds:'enfance', kw:['taux','educ'],                        label:'Taux actions éducatives ASE', unit:'‰', fmt:'dec1', themes:['ase'], desc:"Actions éducatives (AED+AEMO) pour 1000 jeunes de moins de 21 ans." },
+  { id:'ind33', ds:'enfance', kw:['taux','accueil'],                     label:'Taux mesures accueil ASE', unit:'‰', fmt:'dec1', themes:['ase'], desc:"Mesures de placement pour 1000 jeunes de moins de 21 ans." },
+  { id:'ind34', ds:'enfance', kw:['saisine','juge'],                     label:'Part mineurs saisine juge enfants', unit:'%', fmt:'pct1', themes:['ase'], desc:"Part de mineurs faisant l'objet d'une saisine du juge des enfants en assistance éducative." },
+  { id:'ind35', ds:'enfance', kw:['equipement'],                         label:"Taux d'équipement établissements ASE", unit:'‰', fmt:'dec1', themes:['ase'], desc:"Places en établissements habilités ASE pour 1000 jeunes de moins de 21 ans." }
+];
+
+async function loadDREES() {
+  addLog('⏳', 'DREES : détection des champs de l\'API sur data.drees...');
+  var dsUsed = {};
+  DREES_RULES.forEach(function(r) { dsUsed[r.ds] = true; });
+
+  var fieldsByDs = {}, dimByDs = {}, recordByDs = {};
+  for (var dsKey in dsUsed) {
+    try {
+      var fields = await getDreesFields(dsKey);
+      if (!fields.length) { addLog('⚠️', 'DREES (' + dsKey + ') : impossible de lire le schéma des champs.'); continue; }
+      var deptField = findDreesDim(fields, ['departement'], 'code');
+      var yearField = findDreesDim(fields, ['annee']);
+      if (!deptField) { addLog('⚠️', 'DREES (' + dsKey + ') : champ département introuvable.'); continue; }
+      dimByDs[dsKey] = { deptField: deptField, yearField: yearField };
+      fieldsByDs[dsKey] = fields;
+      var rec = await queryDreesRecord(dsKey, deptField, '11', yearField);
+      if (!rec) { addLog('⚠️', 'DREES (' + dsKey + ') : aucun enregistrement pour l\'Aude (champ « ' + deptField + ' »).'); continue; }
+      recordByDs[dsKey] = rec;
+    } catch (e) {
+      addLog('❌', 'DREES (' + dsKey + ') : erreur de connexion — ' + e.message);
+    }
+  }
+
+  if (typeof DREES_META === 'undefined') window.DREES_META = [];
+  var prevIds = DREES_META.map(function(m) { return m.id; });
+  var updated = 0;
+
+  DREES_RULES.forEach(function(rule) {
+    var fields = fieldsByDs[rule.ds], rec = recordByDs[rule.ds], dim = dimByDs[rule.ds];
+    if (!fields || !rec) return;
+    var match = bestDreesField(fields, rule.kw, rule.ex);
+    if (!match) { addLog('⚠️', rule.id + ' : aucun champ DREES ne correspond aux mots-clés (' + rule.kw.join(', ') + ').'); return; }
+    var val = rec[match.name];
+    if (val === null || val === undefined || val === '') { addLog('⚠️', rule.id + ' : champ « ' + (match.label || match.name) + ' » trouvé mais vide.'); return; }
+    var aude = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
+    var annee = dim.yearField ? rec[dim.yearField] : null;
+    var isNew = prevIds.indexOf(rule.id) < 0;
+
+    var existing = DREES_META.find(function(m) { return m.id === rule.id; });
+    var entry = existing || {
+      id: rule.id, label: rule.label, unit: rule.unit, fmt: rule.fmt, themes: rule.themes,
+      occ:null, fra:null, rank_fr:null, rank_strate:null, rank_occ:null,
+      total_fr:96, total_strate:11, total_occ:13, stats_fr:{}, stats_strate:{}, stats_occ:{}, has_ts:false,
+      desc: rule.desc
+    };
+    entry.aude = aude;
+    entry.annee = annee;
+    entry.source = 'DREES — data.drees (direct, champ: ' + (match.label || match.name) + ')';
+    entry.isNew = isNew;
+    if (!existing) DREES_META.push(entry);
+    DREES_SNAP[rule.id] = { '11': aude };
+    updated++;
+    addLog('✅', rule.id + ' (' + entry.label + ') : ' + aude + ' ' + (entry.unit || '') + ' — champ « ' + (match.label || match.name) + ' », année ' + annee, isNew);
+  });
+
+  addLog(updated ? '✅' : '⚠️', 'DREES : ' + updated + '/' + DREES_RULES.length + ' indicateurs mis à jour en direct.');
 }
 
 // ============================================================
