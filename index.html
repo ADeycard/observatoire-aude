@@ -1147,48 +1147,188 @@ function colorMap() {
 // LIVE RELOAD (CAF + Open Data Aude)
 // ============================================================
 // ✅ Version corrigée de la fonction
-function reloadLive() {
+async function reloadLive() {
   const btn = document.getElementById('reload-btn');
-  btn.innerText = '🔄 Chargement...';
-  btn.disabled = true;
+  const lastUpdEl = document.getElementById('lastupd');
 
-  // Remplacez l'URL par l'accès à vos données réelles si nécessaire
-  fetch('data.json')
-    .then(res => res.json())
-    .then(data => {
-      data.forEach(item => {
-        // Recherche du métadonnée correspondant à l'ID
-        const meta = DREES_DATA.meta.find(m => m.id === item.id);
-        if (meta) {
-          // Conversion explicite de la valeur
-          const valNum = parseFloat(item.val_aude);
-          if (!isNaN(valNum)) {
-            meta.aude = valNum;
-          }
-        }
+  // Évite qu'un second clic lance plusieurs chargements simultanés
+  if (btn && btn.disabled) {
+    return;
+  }
+
+  // État visuel du bouton pendant le chargement
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Chargement...';
+  }
+
+  try {
+    // Réinitialisation du journal et du compteur des nouveaux indicateurs
+    if (typeof refreshLog !== 'undefined') {
+      refreshLog.length = 0;
+    }
+
+    if (typeof newCount !== 'undefined') {
+      newCount = 0;
+    }
+
+    // Information affichée dans l'onglet « Nouveautés »
+    if (typeof addLog === 'function') {
+      addLog('⏳', 'Rechargement des données en ligne démarré...', false);
+    }
+
+    /*
+      Chargement des sources.
+
+      Promise.allSettled est volontairement utilisé :
+      si une API est indisponible, les autres peuvent tout de même
+      être rechargées.
+    */
+    const resultats = await Promise.allSettled([
+      typeof loadCAF === 'function'
+        ? loadCAF()
+        : Promise.reject(new Error('Fonction loadCAF introuvable')),
+
+      typeof loadDREES === 'function'
+        ? loadDREES()
+        : Promise.reject(new Error('Fonction loadDREES introuvable')),
+
+      typeof loadAude === 'function'
+        ? loadAude()
+        : Promise.reject(new Error('Fonction loadAude introuvable')),
+
+      typeof loadINSEE === 'function'
+        ? loadINSEE()
+        : Promise.reject(new Error('Fonction loadINSEE introuvable'))
+    ]);
+
+    // Après les appels aux API, on reconstruit la liste globale
+    // d'indicateurs utilisée par le tableau de bord et les autres vues.
+    if (typeof rebuildAllMeta === 'function') {
+      rebuildAllMeta();
+    }
+
+    // Met à jour ce qui est visible à l'écran.
+    if (typeof renderDashCards === 'function') {
+      renderDashCards();
+    } else if (typeof buildDash === 'function') {
+      buildDash();
+    }
+
+    if (typeof renderRankIndBar === 'function') {
+      renderRankIndBar();
+    }
+
+    if (typeof renderRankTable === 'function') {
+      renderRankTable();
+    }
+
+    if (typeof renderEvoIndBar === 'function') {
+      renderEvoIndBar();
+    }
+
+    if (typeof drawEvoChart === 'function') {
+      drawEvoChart();
+    }
+
+    if (typeof renderCarteIndBar === 'function') {
+      renderCarteIndBar();
+    }
+
+    if (typeof colorMap === 'function') {
+      colorMap();
+    }
+
+    // Comptage des sources qui ont réussi / échoué
+    const nbOk = resultats.filter(function(resultat) {
+      return resultat.status === 'fulfilled';
+    }).length;
+
+    const erreurs = resultats.filter(function(resultat) {
+      return resultat.status === 'rejected';
+    });
+
+    if (typeof addLog === 'function') {
+      if (erreurs.length === 0) {
+        addLog(
+          '✅',
+          'Rechargement terminé : les ' + nbOk + ' sources ont été interrogées.',
+          false
+        );
+      } else {
+        addLog(
+          '⚠️',
+          'Rechargement terminé avec ' + nbOk +
+          ' source(s) disponible(s) et ' + erreurs.length +
+          ' erreur(s). Consultez la console avec F12 si besoin.',
+          false
+        );
+      }
+    }
+
+    // Met à jour la date et l'heure indiquées dans le bandeau.
+    if (lastUpdEl) {
+      const maintenant = new Date();
+
+      const heure = maintenant.toLocaleTimeString('fr-FR', {
+        hour: '2-digit',
+        minute: '2-digit'
       });
 
-      // Mettre à jour l'interface
-      if (typeof renderDash === 'function') renderDash();
-      if (typeof renderClassement === 'function') renderClassement();
+      lastUpdEl.textContent = 'Dernière MAJ : ' + heure;
+    }
 
-      // Mise à jour de la date
-      const now = new Date();
-      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const lastUpdEl = document.getElementById('lastupd');
-      if (lastUpdEl) {
-        lastUpdEl.innerText = 'Dernière MAJ : ' + timeStr;
-      }
+    // Si l'onglet Nouveautés est ouvert, on le rafraîchit directement.
+    const ongletNouveautes = document.getElementById('nouveautes');
 
-      btn.innerText = '⚡ Recharger données';
+    if (
+      ongletNouveautes &&
+      ongletNouveautes.classList.contains('on') &&
+      typeof buildNouveautes === 'function'
+    ) {
+      buildNouveautes();
+    }
+
+    if (btn) {
+      btn.textContent = erreurs.length === 0
+        ? 'Données rechargées'
+        : 'Rechargement partiel';
+
+      // Le texte initial est remis après deux secondes.
+      setTimeout(function() {
+        btn.textContent = 'Recharger données';
+      }, 2500);
+    }
+
+  } catch (erreur) {
+    console.error('Erreur générale pendant le rechargement :', erreur);
+
+    if (typeof addLog === 'function') {
+      addLog(
+        '❌',
+        'Échec du rechargement : ' + erreur.message,
+        false
+      );
+    }
+
+    if (btn) {
+      btn.textContent = 'Erreur de chargement';
+
+      setTimeout(function() {
+        btn.textContent = 'Recharger données';
+      }, 3000);
+    }
+
+  } finally {
+    // Cette partie est exécutée même si une erreur survient.
+    if (btn) {
       btn.disabled = false;
-    })
-    .catch(err => {
-      console.error('Erreur lors du rechargement :', err);
-      btn.innerText = '❌ Erreur';
-      btn.disabled = false;
-    });
+    }
+  }
 }
+
+// Rend la fonction disponible pour onclick="reloadLive()"
+window.reloadLive = reloadLive;
 window.reloadLive = reloadLive;
 function addLog(ico, msg, isNew) {
   var ts = new Date().toLocaleTimeString('fr-FR');
