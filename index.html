@@ -1,259 +1,1309 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Observatoire Social de l'Aude - Tableau de Bord</title>
-  <style>
-    /* STYLES GÉNÉRAUX */
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; color: #1e293b; line-height: 1.5; }
-    
-    header { background-color: #1e3a8a; color: white; padding: 1.5rem; text-align: center; }
-    header h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 0.5rem; }
-    header p { font-size: 0.95rem; opacity: 0.9; }
+<meta name="robots" content="noindex, nofollow">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Observatoire Social · Aude (11) · v7</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:#edf2f7;color:#1a2845;font-size:13px;min-height:100vh}
+/* NAV */
+#nav{background:#1a4a6e;border-bottom:3px solid #ED7D31;padding:0 16px;display:flex;align-items:center;gap:0;height:54px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+#nav .brand{color:#fff;font-weight:700;font-size:14px;white-space:nowrap;margin-right:20px}
+#nav .subtitle{color:#b8d4e8;font-size:11px;margin-right:auto}
+.nav-tab{background:none;border:none;color:#c0d8ee;padding:0 14px;height:54px;cursor:pointer;font-size:13px;font-family:inherit;border-bottom:3px solid transparent;transition:all .15s}
+.nav-tab:hover{color:#fff;background:#ffffff18}
+.nav-tab.on{color:#FFB347;border-bottom-color:#FFB347;font-weight:600}
+#nav .reload-btn{background:#0d3352;color:#7fb3f5;border:1px solid #2a6090;border-radius:5px;padding:5px 12px;cursor:pointer;font-size:12px;font-family:inherit;margin-left:12px;white-space:nowrap;transition:background .15s}
+#nav .reload-btn:hover{background:#2a6090}
+#nav .lastupd{color:#90b8d8;font-size:10px;margin-left:8px;white-space:nowrap}
+#nav .branding{color:#90b8d8;font-size:10px;margin-left:12px;white-space:nowrap}
+/* SECTIONS */
+.section{display:none;padding:16px;min-height:calc(100vh - 54px)}
+.section.on{display:block}
+/* DASHBOARD */
+#dash .theme-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.theme-btn{background:#fff;border:1px solid #c5d8ea;color:#4a6a8a;padding:5px 12px;border-radius:20px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.theme-btn:hover{background:#e8f2fa;color:#1a4a6e;border-color:#8ab0cc}
+.theme-btn.on{background:#ED7D31;border-color:#ED7D31;color:#fff;font-weight:600;box-shadow:0 2px 6px rgba(237,125,49,.3)}
+.theme-section{margin-bottom:20px}
+.theme-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:6px 12px;border-radius:4px;margin-bottom:10px;color:#fff}
+.th-demographie{background:#1a5276}
+.th-ages{background:#1a7a58}
+.th-handicap{background:#6a3090}
+.th-financier{background:#9a4a10}
+.th-social{background:#1a5276}
+.th-aude{background:#1a6060}
+.th-ase{background:#c0570a}
+.th-jeunesse{background:#c0570a}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
+.card{background:#fff;border:1px solid #d0e2f0;border-radius:8px;padding:12px;cursor:pointer;transition:all .15s;position:relative;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.card:hover{border-color:#ED7D31;transform:translateY(-2px);box-shadow:0 4px 12px rgba(237,125,49,.2)}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.card-label{font-size:12px;color:#5a7a9a;flex:1;margin-right:8px;line-height:1.3}
+.card-source{font-size:9px;color:#8aaBcc;white-space:nowrap}
+.card-val{font-size:26px;font-weight:700;color:#1a2845;margin-bottom:4px}
+.card-val span{font-size:13px;font-weight:400;color:#3a7abf;margin-left:4px}
+.card-refs{display:flex;gap:10px;margin-bottom:8px;font-size:10px}
+.card-ref-item{text-align:center}
+.card-ref-val{color:#3a6a9a;font-weight:600}
+.card-ref-lbl{color:#8aaabb;font-size:9px}
+.card-ranks{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.rank-badge{font-size:10px;padding:2px 6px;border-radius:3px;background:#e8f0f8;border:1px solid #c0d8ec;color:#4a6a8a}
+.rank-badge.good{background:#e8f8ee;border-color:#b0dcc0;color:#1a7a40}
+.rank-badge.mid{background:#fffbe8;border-color:#ddd080;color:#8a7010}
+.rank-badge.bad{background:#ffeaec;border-color:#e8b0b8;color:#c03040}
+.card-stats{display:flex;gap:6px;font-size:9px;color:#8aaabb;flex-wrap:wrap;margin-top:4px}
+.card-stat{background:#edf2f7;padding:2px 5px;border-radius:3px;white-space:nowrap}
+.card-stat span{color:#3a7abf}
+.card-new{position:absolute;top:6px;right:6px;background:#ED7D31;color:#fff;font-size:8px;padding:1px 4px;border-radius:2px;font-weight:700}
+/* MODAL */
+#modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#00000055;z-index:200;align-items:center;justify-content:center}
+#modal-overlay.on{display:flex}
+#modal{background:#fff;border:1px solid #c0d8ec;border-radius:12px;padding:24px;max-width:560px;width:95%;max-height:85vh;overflow-y:auto;position:relative;box-shadow:0 8px 32px rgba(0,0,0,.15)}
+#modal h3{color:#1a2845;font-size:16px;margin-bottom:4px}
+#modal .modal-meta{font-size:11px;color:#7a9aaa;margin-bottom:16px}
+.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:#8aaabb;font-size:20px;cursor:pointer}
+.modal-close:hover{color:#1a2845}
+.modal-section{margin-bottom:16px}
+.modal-section h4{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#3a7abf;margin-bottom:8px}
+.modal-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.modal-stat-box{background:#edf2f7;border-radius:6px;padding:8px;text-align:center}
+.modal-stat-val{font-size:15px;font-weight:700;color:#1a2845}
+.modal-stat-lbl{font-size:9px;color:#7a9aaa;margin-top:2px}
+.modal-rank-row{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;border-radius:4px;margin-bottom:4px;font-size:12px}
+.modal-rank-row:nth-child(odd){background:#f4f8fc}
+/* CLASSEMENT */
+#classement .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+#classement .theme-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.ind-select-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.ind-btn{background:#fff;border:1px solid #c0d8ec;color:#5a7a9a;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-family:inherit;transition:all .15s}
+.ind-btn:hover{background:#e8f2fa;border-color:#8ab0cc}
+.ind-btn.on{background:#4472C4;border-color:#4472C4;color:#fff}
+.dep-select{background:#fff;border:1px solid #c0d8ec;color:#1a2845;padding:5px 8px;border-radius:5px;font-size:12px;font-family:inherit;cursor:pointer}
+#rank-table{width:100%;border-collapse:collapse;font-size:12px}
+#rank-table th{background:#e8f0f8;color:#3a6a8a;padding:7px 8px;text-align:left;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid #b8d0e8}
+#rank-table td{padding:6px 8px;border-bottom:1px solid #e8f0f8;vertical-align:middle;color:#1a2845}
+#rank-table tr:hover td{background:#f0f6fc}
+#rank-table tr.aude-row td{background:#fff4ec !important;color:#c0570a !important;font-weight:700}
+#rank-table tr.sel-row td{background:#f0f6fc !important;border-left:3px solid #4472C4 !important}
+.gauge{background:#dce8f4;border-radius:3px;height:8px;position:relative;min-width:60px}
+.gauge-fill{background:#4472C4;border-radius:3px;height:100%;transition:width .3s}
+.gauge-fill.aude{background:#ED7D31}
+/* scope buttons - Classement */
+.scope-btn{background:#fff;border:1.5px solid #b8d0e8;color:#3a6a8a;padding:6px 16px;border-radius:20px;cursor:pointer;font-size:12px;font-family:inherit;font-weight:500;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.scope-btn:hover{background:#e8f2fa;border-color:#5a9ac4;color:#1a4a6e}
+.scope-btn.on{background:#1a4a6e;border-color:#1a4a6e;color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(26,74,110,.25)}
+/* EVOLUTION */
+#evolution .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+#evo-chart{width:100%;background:#fff;border:1px solid #d0e2f0;border-radius:8px;padding:16px;min-height:360px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+#evo-svg{width:100%;height:320px}
+.evo-legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:11px}
+.evo-legend-item{display:flex;align-items:center;gap:5px}
+.evo-legend-dot{width:10px;height:10px;border-radius:50%}
+/* CARTE */
+#carte .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.map-wrap{display:flex;gap:16px;flex-wrap:wrap}
+#map-svg-wrap{flex:1;min-width:280px;height:420px;background:#fff;border:1px solid #d0e2f0;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.map-svg path{stroke:#edf2f7;stroke-width:0.5;cursor:pointer;transition:opacity .1s}
+.map-svg path.hl{stroke:#1a2845 !important;stroke-width:1.5}
+.map-svg path:hover{opacity:.8}
+#map-legend{width:160px;background:#fff;border:1px solid #d0e2f0;border-radius:8px;padding:12px;font-size:11px;align-self:flex-start;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+#map-legend h4{color:#3a7abf;margin-bottom:10px;font-size:11px;font-weight:600}
+.legend-item{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.legend-swatch{width:18px;height:14px;border-radius:2px;flex-shrink:0}
+#tooltip{position:fixed;background:#1a2845;border:1px solid #3a6a8a;border-radius:6px;padding:8px 10px;font-size:11px;pointer-events:none;display:none;z-index:150;max-width:180px;color:#fff}
+/* EXPORT */
+#export .export-themes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.exp-theme-btn{background:#fff;border:1px solid #c0d8ec;color:#5a7a9a;padding:8px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit;transition:all .15s;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.exp-theme-btn:hover{background:#e8f2fa;border-color:#8ab0cc}
+.exp-theme-btn.on{background:#4472C4;border-color:#4472C4;color:#fff}
+.exp-options{background:#fff;border:1px solid #d0e2f0;border-radius:8px;padding:16px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.exp-options h4{color:#3a7abf;font-size:12px;font-weight:600;margin-bottom:10px}
+.exp-opt-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;color:#5a7a9a}
+.exp-opt-row input[type=checkbox]{accent-color:#ED7D31}
+.gen-pdf-btn{background:#ED7D31;color:#fff;border:none;border-radius:6px;padding:10px 24px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(237,125,49,.3);transition:background .15s}
+.gen-pdf-btn:hover{background:#c86820}
+.gen-pdf-btn:disabled{background:#aaa;cursor:wait}
+/* PDF Preview */
+#pdf-preview-wrap{background:#fff;border:1px solid #d0e2f0;border-radius:8px;padding:0;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.10);overflow:hidden;display:none}
+#pdf-preview-wrap.on{display:block}
+#pdf-preview-header{background:#1a4a6e;color:#fff;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600}
+#pdf-preview-body{padding:16px;max-height:400px;overflow-y:auto;font-size:11px;color:#1a2845}
+/* NOUVEAUTES */
+#nouveautes .refresh-log{background:#fff;border:1px solid #d0e2f0;border-radius:8px;padding:16px;font-size:12px;max-height:400px;overflow-y:auto;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.log-entry{padding:6px 8px;border-bottom:1px solid #e8f0f8;display:flex;align-items:flex-start;gap:10px;font-size:11px}
+.log-entry:last-child{border-bottom:none}
+.log-ts{color:#7a9aaa;white-space:nowrap;min-width:100px}
+.log-ico{font-size:14px}
+.log-msg{color:#2a3a5a;flex:1}
+.log-new{background:#e8f8ee}
+/* API STATUS */
+.api-status-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px}
+.api-status-card{background:#fff;border:1px solid #d0e2f0;border-radius:8px;padding:12px;display:flex;align-items:center;gap:10px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.api-status-icon{font-size:22px;flex-shrink:0}
+.api-status-name{font-weight:700;font-size:12px;color:#1a2845}
+.api-status-state{font-size:11px;margin-top:2px}
+.api-ok{color:#1a8a40}
+.api-err{color:#c03040}
+.api-pend{color:#8a7010}
+/* MISC */
+.msg{text-align:center;color:#7a9aaa;padding:40px}
+.msg .ico{font-size:40px;margin-bottom:10px}
+.msg strong{display:block;color:#3a7abf;margin-bottom:6px}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid #c0d8ec;border-top-color:#4472C4;border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.badge-caf{background:#e8f8ee;color:#1a7a40;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
+.badge-aude{background:#e8f0f8;color:#3a6a9a;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
+.badge-drees{background:#f0e8f8;color:#7a30c0;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
+.badge-insee{background:#e8f0f8;color:#3060a0;font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700}
 
-    main { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; }
-
-    /* GRILLE D'INDICATEURS */
-    .grid-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
-    
-    .card { background: white; border-radius: 8px; border: 1px solid #e2e8f0; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
-    .card:hover { transform: translateY(-3px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-color: #cbd5e1; }
-    
-    .card-title { font-size: 1.1rem; font-weight: 600; color: #0f172a; margin-bottom: 0.5rem; }
-    .card-value { font-size: 2rem; font-weight: 700; color: #ED7D31; margin-bottom: 0.25rem; }
-    .card-unit { font-size: 0.85rem; color: #64748b; font-weight: normal; }
-    .card-subtitle { font-size: 0.85rem; color: #64748b; margin-top: 0.5rem; border-top: 1px solid #f1f5f9; padding-top: 0.5rem; }
-
-    /* MODAL ET INFOBULLE */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
-    .modal-overlay.on { display: flex; }
-    
-    .modal-box { background: white; border-radius: 10px; width: 90%; max-width: 600px; padding: 1.5rem; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); position: relative; max-height: 90vh; overflow-y: auto; }
-    .modal-close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #64748b; }
-    .modal-close:hover { color: #0f172a; }
-
-    .modal-title { font-size: 1.25rem; font-weight: 700; color: #1e3a8a; margin-bottom: 0.25rem; padding-right: 1.5rem; }
-    .modal-source { font-size: 0.8rem; color: #64748b; margin-bottom: 1.25rem; font-style: italic; }
-
-    .modal-section { margin-top: 1rem; }
-    .modal-section h4 { font-size: 0.95rem; color: #334155; margin-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.25rem; }
-
-    /* TABLEAU DES STATISTIQUES */
-    table.modal-ref-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 0.5rem; }
-    table.modal-ref-table th, table.modal-ref-table td { padding: 0.5rem; border-bottom: 1px solid #f1f5f9; text-align: left; }
-    table.modal-ref-table th { background-color: #edf2f7; font-weight: 600; color: #475569; }
-    table.modal-ref-table tr.highlight { background-color: #fff7ed; }
-    table.modal-ref-table tr.separator { border-top: 2px solid #cbd5e1; }
-    table.modal-ref-table td.val { text-align: right; font-variant-numeric: tabular-nums; }
-  </style>
+.nav-logo{height:38px;width:auto;max-width:120px;object-fit:contain;display:block;border-radius:4px}
+.card-tooltip{display:none;position:fixed;min-width:320px;max-width:420px;background:#1a2845;color:#fff;font-size:11px;padding:13px 15px;border-radius:8px;line-height:1.5;z-index:9999;box-shadow:0 6px 28px rgba(0,0,0,.3);pointer-events:none;white-space:normal}
+.card-tooltip table{width:100%;border-collapse:collapse}
+.card-tooltip td, .card-tooltip th{padding:3px 5px;font-size:10.5px}
+.card-tooltip th{border-bottom:1px solid rgba(255,255,255,0.2)}
+</style>
 </head>
 <body>
 
-  <header>
-    <h1>Observatoire Social de l'Aude</h1>
-    <p>Indicateurs de cadrage et statistiques comparatives de la strate</p>
-  </header>
-
-  <main>
-    <div class="grid-container" id="cards-container">
-      <!-- Les cartes seront générées dynamiquement -->
-    </div>
-  </main>
-
-  <!-- MODAL / INFOBULLE DES DÉTAILS -->
-  <div class="modal-overlay" id="modal-overlay">
-    <div class="modal-box">
-      <button class="modal-close" onclick="closeModal()">&times;</button>
-      <h3 class="modal-title" id="modal-title">Intitulé de l'indicateur</h3>
-      <div class="modal-source" id="modal-source">Source : --</div>
-
-      <div class="modal-section">
-        <h4>Valeurs de référence et Statistiques</h4>
-        <table class="modal-ref-table" id="modal-ref-table">
-          <thead>
-            <tr>
-              <th>Territoire / Statistique</th>
-              <th style="text-align: right;">Valeur</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="highlight">
-              <td><strong>Aude (11)</strong></td>
-              <td class="val" id="modal-val-aude" style="font-weight: bold; color: #ED7D31;">-</td>
-            </tr>
-            <tr>
-              <td>Région Occitanie</td>
-              <td class="val" id="modal-val-reg">-</td>
-            </tr>
-            <tr>
-              <td>France Métropolitaine</td>
-              <td class="val" id="modal-val-nat">-</td>
-            </tr>
-            <tr class="separator">
-              <td>Moyenne Strate (11 dép.)</td>
-              <td class="val" id="modal-stat-avg">-</td>
-            </tr>
-            <tr>
-              <td>Médiane Strate</td>
-              <td class="val" id="modal-stat-med">-</td>
-            </tr>
-            <tr>
-              <td>1er Quartile (Q1)</td>
-              <td class="val" id="modal-stat-q1">-</td>
-            </tr>
-            <tr>
-              <td>3ème Quartile (Q3)</td>
-              <td class="val" id="modal-stat-q3">-</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+<div id="nav">
+  <div style="display:flex;align-items:center;margin-right:16px">
+<img class="nav-logo" src="images/logocd11.png" alt="Logo Conseil départemental de l'Aude" style="margin-right:10px">
+    <div>
+      <div class="brand">Observatoire Social · Aude (11)</div>
+      <div class="subtitle">DREES · INSEE · CAF · Open Data Aude · v8</div>
     </div>
   </div>
+  <button class="nav-tab on" onclick="showTab('dash',this)">Tableau de bord</button>
+  <button class="nav-tab" onclick="showTab('classement',this)">Classements</button>
+  <button class="nav-tab" onclick="showTab('evolution',this)">Évolution</button>
+  <button class="nav-tab" onclick="showTab('carte',this)">Carte</button>
+  <button class="nav-tab" onclick="showTab('export',this)">Export PDF</button>
+  <button class="nav-tab" onclick="showTab('nouveautes',this)" id="nvtab">Nouveautés</button>
+  <button class="reload-btn" id="reload-btn" onclick="reloadLive()">⚡ Recharger données</button>
+  <div class="lastupd" id="lastupd">—</div>
+  <div class="branding">Contrôle de Gestion - Outil réalisé par IA mais révisé humainement.</div>
+</div>
 
-  <script>
-    // --- 1. JEU DE DONNÉES EXEMPLE (INCLUANT LES 11 DÉPARTEMENTS DE LA STRATE) ---
-    const indicatorsData = {
-      "ind_taux_pauvrette": {
-        id: "ind_taux_pauvrette",
-        label: "Taux de pauvreté",
-        unite: "%",
-        source: "INSEE - FILOSOFI",
-        valAude: 19.8,
-        valRegion: 16.8,
-        valFrance: 14.5,
-        // Données brutes de la strate des 11 départements comparables pour calculs
-        departements: [
-          { code: "11", nom: "Aude", valeur: 19.8 },
-          { code: "09", nom: "Ariège", valeur: 18.2 },
-          { code: "12", nom: "Aveyron", valeur: 13.1 },
-          { code: "30", nom: "Gard", valeur: 19.5 },
-          { code: "32", nom: "Gers", valeur: 14.2 },
-          { code: "34", nom: "Hérault", valeur: 19.0 },
-          { code: "46", nom: "Lot", valeur: 15.4 },
-          { code: "48", nom: "Lozère", valeur: 13.8 },
-          { code: "65", nom: "Hautes-Pyrénées", valeur: 15.1 },
-          { code: "66", nom: "Pyrénées-Orientales", valeur: 21.0 },
-          { code: "81", nom: "Tarn", valeur: 15.7 }
-        ]
-      },
-      "ind_rsa": {
-        id: "ind_rsa",
-        label: "Allocataires du RSA dans la population",
-        unite: "%",
-        source: "CNAF / DREES",
-        valAude: 7.2,
-        valRegion: 5.8,
-        valFrance: 4.9,
-        departements: [
-          { code: "11", nom: "Aude", valeur: 7.2 },
-          { code: "09", nom: "Ariège", valeur: 6.5 },
-          { code: "12", nom: "Aveyron", valeur: 3.2 },
-          { code: "30", nom: "Gard", valeur: 7.0 },
-          { code: "32", nom: "Gers", valeur: 4.1 },
-          { code: "34", nom: "Hérault", valeur: 7.4 },
-          { code: "46", nom: "Lot", valeur: 4.8 },
-          { code: "48", nom: "Lozère", valeur: 3.0 },
-          { code: "65", nom: "Hautes-Pyrénées", valeur: 5.2 },
-          { code: "66", nom: "Pyrénées-Orientales", valeur: 8.1 },
-          { code: "81", nom: "Tarn", valeur: 5.0 }
-        ]
-      }
-    };
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div id="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+<div id="tooltip"></div>
 
-    // --- 2. FONCTION STATISTIQUE (MOYENNE, MÉDIANE, Q1, Q3) ---
-    function calculerStatistiquesIndicateur(valeursDepartements) {
-      const vals = valeursDepartements
-        .filter(v => v !== null && v !== undefined && !isNaN(v))
-        .sort((a, b) => a - b);
-      
-      if (vals.length === 0) return { moyenne: null, mediane: null, q1: null, q3: null };
+<div id="dash" class="section on"></div>
+<div id="classement" class="section"></div>
+<div id="evolution" class="section"></div>
+<div id="carte" class="section"></div>
+<div id="export" class="section"></div>
+<div id="nouveautes" class="section"></div>
 
-      // Moyenne arithmétique de la strate
-      const somme = vals.reduce((acc, v) => acc + v, 0);
-      const moyenne = somme / vals.length;
+<script>
+var DREES_DEPTS = {"01":"Ain","02":"Aisne","03":"Allier","04":"Alpes-de-Haute-Provence","05":"Hautes-Alpes","06":"Alpes-Maritimes","07":"Ardèche","08":"Ardennes","09":"Ariège","10":"Aube","11":"Aude","12":"Aveyron","13":"Bouches-du-Rhône","14":"Calvados","15":"Cantal","16":"Charente","17":"Charente-Maritime","18":"Cher","19":"Corrèze","21":"Côte-d'Or","22":"Côtes-d'Armor","23":"Creuse","24":"Dordogne","25":"Doubs","26":"Drôme","27":"Eure","28":"Eure-et-Loir","29":"Finistère","30":"Gard","31":"Haute-Garonne","32":"Gers","33":"Gironde","34":"Hérault","35":"Ille-et-Vilaine","36":"Indre","37":"Indre-et-Loire","38":"Isère","39":"Jura","40":"Landes","41":"Loir-et-Cher","42":"Loire","43":"Haute-Loire","44":"Loire-Atlantique","45":"Loiret","46":"Lot","47":"Lot-et-Garonne","48":"Lozère","49":"Maine-et-Loire","50":"Manche","51":"Marne","52":"Haute-Marne","53":"Mayenne","54":"Meurthe-et-Moselle","55":"Meuse","56":"Morbihan","57":"Moselle","58":"Nièvre","59":"Nord","60":"Oise","61":"Orne","62":"Pas-de-Calais","63":"Puy-de-Dôme","64":"Pyrénées-Atlantiques","65":"Hautes-Pyrénées","66":"Pyrénées-Orientales","67":"Bas-Rhin","68":"Haut-Rhin","69":"Rhône","70":"Haute-Saône","71":"Saône-et-Loire","72":"Sarthe","73":"Savoie","74":"Haute-Savoie","75":"Paris","76":"Seine-Maritime","77":"Seine-et-Marne","78":"Yvelines","79":"Deux-Sèvres","80":"Somme","81":"Tarn","82":"Tarn-et-Garonne","83":"Var","84":"Vaucluse","85":"Vendée","86":"Vienne","87":"Haute-Vienne","88":"Vosges","89":"Yonne","90":"Territoire-de-Belfort","91":"Essonne","92":"Hauts-de-Seine","93":"Seine-Saint-Denis","94":"Val-de-Marne","95":"Val-d'Oise","2A":"Corse-du-Sud","2B":"Haute-Corse","6AE":"Coll. europ. d'Alsace"};
 
-      // Calcul des quantiles (méthode d'interpolation)
-      function quantile(arr, q) {
-        const pos = (arr.length - 1) * q;
-        const base = Math.floor(pos);
-        const rest = pos - base;
-        if (arr[base + 1] !== undefined) {
-          return arr[base] + rest * (arr[base + 1] - arr[base]);
+var DREES_META = [];
+var DREES_SNAP = {};
+var DREES_TS   = {};   
+var DEPTS      = DREES_DEPTS; 
+
+// Occitanie (13 départements)
+var OCC        = ['09','11','12','30','31','32','34','46','48','65','66','81','82'];
+// Strate de comparaison (Allier, Ardèche, Aude, Charente, Dordogne, Landes, Lot-et-Garonne, Pyrénées-Orientales, Tarn, Haute-Vienne, Vosges)
+var STRATE     = ['03','07','11','16','24','40','47','66','81','87','88'];
+
+var INSEE_SNAP = {};
+
+(function() {
+  var strateExtra = {};
+  Object.keys(strateExtra).forEach(function(id) {
+    if (!DREES_SNAP[id]) DREES_SNAP[id] = {};
+    Object.assign(DREES_SNAP[id], strateExtra[id]);
+  });
+})();
+
+var INSEE_META = [];
+var CAF_META  = [];
+var AUDE_META = [];
+
+var ALL_META = [];
+
+var THEMES = [
+  {id:'all', lbl:'Tous'},
+  {id:'demographie', lbl:'Démographie', cls:'th-demographie'},
+  {id:'ages', lbl:'Personnes âgées', cls:'th-ages'},
+  {id:'handicap', lbl:'Handicap', cls:'th-handicap'},
+  {id:'ase', lbl:'Enfance / ASE / Jeunesse', cls:'th-ase'},
+  {id:'financier', lbl:'Financier', cls:'th-financier'},
+  {id:'social', lbl:'Social / Insertion', cls:'th-social'},
+  {id:'aude', lbl:'Établissements Aude', cls:'th-aude'},
+];
+
+var currentThemeDash = 'all';
+var currentThemeRank = null;
+var currentIndRank   = null;
+var currentRankScope = 'all'; 
+var currentIndEvo    = null;
+var currentThemeEvo  = null;
+var currentThemeCarte = null;
+var currentIndCarte  = null;
+var selectedDept     = null;
+var selectedDeptEvo  = null;
+var refreshLog       = [];
+var mapBuilt         = false;
+var geoCache         = null;
+var newCount         = 0;
+
+function fmt(val, format, unit) {
+  if (val === null || val === undefined) return '—';
+  switch(format) {
+    case 'pct1':   return val.toFixed(1) + ' %';
+    case 'dec1':   return val.toFixed(1) + (unit ? ' '+unit : '');
+    case 'dec2':   return val.toFixed(2) + (unit ? ' '+unit : '');
+    case 'int':    return Math.round(val).toLocaleString('fr-FR') + (unit ? ' '+unit : '');
+    case 'eur0':   return Math.round(val).toLocaleString('fr-FR') + ' €';
+    case 'keur':   return (val/1000).toFixed(1) + ' M€';
+    default:       return val.toLocaleString('fr-FR') + (unit ? ' '+unit : '');
+  }
+}
+
+function fmtShort(val, format) {
+  if (val === null || val === undefined) return '—';
+  switch(format) {
+    case 'pct1':   return val.toFixed(1);
+    case 'dec1':   return val.toFixed(1);
+    case 'dec2':   return val.toFixed(2);
+    case 'int':    return Math.round(val).toLocaleString('fr-FR');
+    case 'eur0':   return Math.round(val).toLocaleString('fr-FR');
+    case 'keur':   return (val/1000).toFixed(1) + ' M€';
+    default:       return val.toFixed ? val.toFixed(2) : val;
+  }
+}
+
+function rankClass(r, total) {
+  if (!r || !total) return '';
+  var pct = r / total;
+  if (pct <= 0.33) return 'good';
+  if (pct <= 0.67) return 'mid';
+  return 'bad';
+}
+
+function showTab(id, btn) {
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('on');});
+  document.querySelectorAll('.nav-tab').forEach(function(b){b.classList.remove('on');});
+  document.getElementById(id).classList.add('on');
+  if (btn) btn.classList.add('on');
+  if (id === 'classement' && !document.getElementById('rank-table')) buildClassement();
+  if (id === 'evolution') buildEvolution();
+  if (id === 'carte') initCarte();
+  if (id === 'export') buildExport();
+  if (id === 'nouveautes') buildNouveautes();
+}
+
+function rebuildAllMeta() {
+  ALL_META = [];
+  
+  if (typeof DREES_META !== 'undefined') DREES_META.forEach(function(m) { ALL_META.push(m); });
+  
+  if (typeof INSEE_META !== 'undefined') {
+    INSEE_META.forEach(function(m) {
+      var full = Object.assign({rank_fr:null,rank_strate:null,rank_occ:null,total_fr:96,total_strate:11,total_occ:13,stats_fr:{},stats_strate:{},stats_occ:{},has_ts:false}, m);
+      ALL_META.push(full);
+      if (typeof INSEE_SNAP !== 'undefined' && INSEE_SNAP && INSEE_SNAP[m.id]) {
+        if (typeof DREES_SNAP !== 'undefined') {
+          if (!DREES_SNAP[m.id]) DREES_SNAP[m.id] = {};
+          Object.assign(DREES_SNAP[m.id], INSEE_SNAP[m.id]);
         }
-        return arr[base];
       }
-
-      return {
-        moyenne: moyenne,
-        mediane: quantile(vals, 0.5),
-        q1: quantile(vals, 0.25),
-        q3: quantile(vals, 0.75)
-      };
-    }
-
-    // --- 3. GÉNÉRATION DU TABLEAU DE BORD (CARTES) ---
-    function renderDashboard() {
-      const container = document.getElementById('cards-container');
-      container.innerHTML = '';
-
-      Object.values(indicatorsData).forEach(ind => {
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.onclick = () => openModal(ind.id);
-
-        card.innerHTML = `
-          <div class="card-title">${ind.label}</div>
-          <div class="card-value">${ind.valAude !== undefined ? ind.valAude : '-'} <span class="card-unit">${ind.unite}</span></div>
-          <div class="card-subtitle">Département de l'Aude (11)</div>
-        `;
-        container.appendChild(card);
-      });
-    }
-
-    // --- 4. AFFICHAGE ET REMPLISSAGE DE LA MODAL ---
-    function openModal(indicatorId) {
-      const ind = indicatorsData[indicatorId];
-      if (!ind) return;
-
-      // Extraire le tableau de valeurs des départements
-      const valeursStrate = ind.departements ? ind.departements.map(d => d.valeur) : [];
-      
-      // Calculer les statistiques
-      const stats = calculerStatistiquesIndicateur(valeursStrate);
-
-      // Titre et source
-      document.getElementById('modal-title').innerText = ind.label;
-      document.getElementById('modal-source').innerText = "Source : " + (ind.source || "Non renseignée");
-
-      // Valeurs fixes de référence
-      document.getElementById('modal-val-aude').innerText = ind.valAude !== undefined ? ind.valAude.toLocaleString('fr-FR') + " " + ind.unite : "N/C";
-      document.getElementById('modal-val-reg').innerText = ind.valRegion !== undefined ? ind.valRegion.toLocaleString('fr-FR') + " " + ind.unite : "N/C";
-      document.getElementById('modal-val-nat').innerText = ind.valFrance !== undefined ? ind.valFrance.toLocaleString('fr-FR') + " " + ind.unite : "N/C";
-
-      // Insertion des statistiques calculées
-      document.getElementById('modal-stat-avg').innerText = stats.moyenne !== null ? stats.moyenne.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " " + ind.unite : "N/C";
-      document.getElementById('modal-stat-med').innerText = stats.mediane !== null ? stats.mediane.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " " + ind.unite : "N/C";
-      document.getElementById('modal-stat-q1').innerText = stats.q1 !== null ? stats.q1.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " " + ind.unite : "N/C";
-      document.getElementById('modal-stat-q3').innerText = stats.q3 !== null ? stats.q3.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + " " + ind.unite : "N/C";
-
-      // Ouvrir la modale
-      document.getElementById('modal-overlay').classList.add('on');
-    }
-
-    function closeModal() {
-      document.getElementById('modal-overlay').classList.remove('on');
-    }
-
-    // Fermer en cliquant à l'extérieur de la boîte
-    document.getElementById('modal-overlay').addEventListener('click', function(e) {
-      if (e.target === this) closeModal();
     });
+  }
 
-    // Initialisation
-    window.onload = renderDashboard;
-  </script>
+  if (typeof CAF_META !== 'undefined') CAF_META.forEach(function(m) { ALL_META.push(m); });
+  if (typeof AUDE_META !== 'undefined') AUDE_META.forEach(function(m) { ALL_META.push(m); });
+  
+  if (typeof DREES_SNAP !== 'undefined') {
+    ALL_META.forEach(function(m) {
+      if (DREES_SNAP[m.id] && Object.keys(DREES_SNAP[m.id]).length > 0) MAP_CARTEABLE[m.id] = true;
+    });
+  }
+}
+
+function buildDash() {
+  var container = document.getElementById('dash');
+  
+  var html = '<div class="theme-bar">';
+  THEMES.forEach(function(th) {
+    html += '<button class="theme-btn'+(th.id===currentThemeDash?' on':'')+'" data-theme-id="'+th.id+'" onclick="setThemeDash(this.dataset.themeId)">' + th.lbl + '</button>';
+  });
+  html += '</div>';
+  html += '<div id="dash-cards"></div>';
+  container.innerHTML = html;
+  renderDashCards();
+}
+
+function setThemeDash(thId) {
+  currentThemeDash = thId;
+  document.querySelectorAll('#dash .theme-btn').forEach(function(b){
+    b.classList.toggle('on', b.dataset.themeId === thId);
+  });
+  renderDashCards();
+}
+
+function renderDashCards() {
+  function matchesTheme(m, thId) {
+    if (!m.themes) return false;
+    if (thId === 'ase') return m.themes.indexOf('ase') >= 0 || m.themes.indexOf('jeunesse') >= 0;
+    return m.themes.indexOf(thId) >= 0;
+  }
+  var filtered = currentThemeDash === 'all' ? ALL_META : ALL_META.filter(function(m){ return matchesTheme(m, currentThemeDash); });
+  
+  var byTheme = {};
+  filtered.forEach(function(m) {
+    var th;
+    if (currentThemeDash !== 'all' && matchesTheme(m, currentThemeDash)) {
+      th = currentThemeDash;
+    } else {
+      var t0 = (m.themes && m.themes[0]) || 'autre';
+      th = t0 === 'jeunesse' ? 'ase' : t0;
+    }
+    if (!byTheme[th]) byTheme[th] = [];
+    byTheme[th].push(m);
+  });
+  
+  var themeOrder = ['demographie','ages','handicap','ase','jeunesse','pmi','financier','social','aude','autre'];
+  var html = '';
+  
+  themeOrder.forEach(function(thId) {
+    if (!byTheme[thId] || byTheme[thId].length === 0) return;
+    var thInfo = THEMES.find(function(t){return t.id===thId;}) || {lbl:thId, cls:'th-social'};
+    html += '<div class="theme-section">';
+    html += '<div class="theme-header ' + (thInfo.cls||'th-social') + '">' + thInfo.lbl + '</div>';
+    html += '<div class="cards-grid">';
+    byTheme[thId].forEach(function(m) {
+      html += buildCard(m);
+    });
+    html += '</div></div>';
+  });
+  
+  if (!html) html = '<div class="msg"><div class="ico">📊</div><strong>Aucun indicateur</strong><p>Sélectionnez un thème ou rechargez les données.</p></div>';
+  document.getElementById('dash-cards').innerHTML = html;
+}
+
+// TOOLTIP
+var _tipEl = null;
+function _getTip() {
+  if (!_tipEl) {
+    _tipEl = document.createElement('div');
+    _tipEl.className = 'card-tooltip';
+    document.body.appendChild(_tipEl);
+  }
+  return _tipEl;
+}
+function showCardTip(e, card) {
+  var tip = _getTip();
+  var ttRaw = decodeURIComponent(card.dataset.tt || '');
+  if (!ttRaw) return;
+  tip.innerHTML = '<div style="font-size:11px;line-height:1.5">' + ttRaw + '</div>';
+  tip.style.display = 'block';
+  _positionTip(e);
+}
+function moveCardTip(e) {
+  if (_tipEl && _tipEl.style.display === 'block') _positionTip(e);
+}
+function hideCardTip() {
+  if (_tipEl) _tipEl.style.display = 'none';
+}
+function _positionTip(e) {
+  var tip = _tipEl;
+  var tw = tip.offsetWidth || 300, th = tip.offsetHeight || 200;
+  var vw = window.innerWidth, vh = window.innerHeight;
+  var x = e.clientX + 16, y = e.clientY - 20;
+  if (x + tw > vw - 10) x = e.clientX - tw - 16;
+  if (y + th > vh - 10) y = vh - th - 10;
+  if (y < 10) y = 10;
+  tip.style.left = x + 'px';
+  tip.style.top  = y + 'px';
+}
+
+function buildCard(m) {
+  var isNew = m.isNew ? '<div class="card-new">NOUVEAU</div>' : '';
+  var srcBadge = '';
+  if (m.source && m.source.indexOf('CAF') >= 0) srcBadge = '<span class="badge-caf">CAF</span>';
+  else if (m.source && m.source.indexOf('Open Data Aude') >= 0) srcBadge = '<span class="badge-aude">AUDE</span>';
+  else if (m.source && m.source.indexOf('DREES') >= 0) srcBadge = '<span class="badge-drees">DREES</span>';
+  else if (m.source && m.source.indexOf('INSEE') >= 0) srcBadge = '<span class="badge-insee">INSEE</span>';
+  
+  var valFmt = fmt(m.aude, m.fmt, m.unit);
+  
+  var ranksHtml = '';
+  if (m.rank_strate && m.total_strate)
+    ranksHtml += '<span class="rank-badge ' + rankClass(m.rank_strate, m.total_strate) + '">Strate ' + m.rank_strate + '/' + m.total_strate + '</span>';
+  if (m.rank_occ && m.total_occ)
+    ranksHtml += '<span class="rank-badge ' + rankClass(m.rank_occ, m.total_occ) + '">Occ ' + m.rank_occ + '/' + m.total_occ + '</span>';
+  if (m.rank_fr && m.total_fr)
+    ranksHtml += '<span class="rank-badge ' + rankClass(m.rank_fr, m.total_fr) + '">France ' + m.rank_fr + '/' + m.total_fr + '</span>';
+  
+  // Construction du contenu de la bulle d'information (Tooltip)
+  function ttStatsRow(label, valAude, s) {
+    var u = m.unit ? ' '+m.unit : '';
+    var valStr = (valAude !== undefined && valAude !== null) ? fmtShort(valAude, m.fmt) : '—';
+    var meanStr = (s && s.mean !== undefined && s.mean !== null) ? fmtShort(s.mean, m.fmt) : '—';
+    var medStr = (s && s.median !== undefined && s.median !== null) ? fmtShort(s.median, m.fmt) : '—';
+    var q1Str = (s && s.q1 !== undefined && s.q1 !== null) ? fmtShort(s.q1, m.fmt) : '—';
+    var q3Str = (s && s.q3 !== undefined && s.q3 !== null) ? fmtShort(s.q3, m.fmt) : '—';
+
+    return '<tr>' +
+      '<td style="color:#8ab;padding:2px 5px 2px 0;white-space:nowrap;font-size:10px;font-weight:600">'+label+'</td>' +
+      '<td style="padding:2px 3px;text-align:right;font-weight:700;color:#f4a44a">'+valStr+'</td>' +
+      '<td style="padding:2px 3px;text-align:right">'+meanStr+'</td>' +
+      '<td style="padding:2px 3px;text-align:right;color:#ccd">'+medStr+'</td>' +
+      '<td style="padding:2px 3px;text-align:right;color:#99b">'+q1Str+'</td>' +
+      '<td style="padding:2px 3px;text-align:right;color:#99b">'+q3Str+'</td>' +
+      '</tr>';
+  }
+
+  var ttHtml = '';
+  // Titre & Valeur Aude
+  if (m.aude !== undefined && m.aude !== null) {
+    ttHtml += '<div style="font-size:12px;font-weight:700;color:#f4a44a;margin-bottom:4px">' +
+      '📍 Aude (11) : ' + fmt(m.aude, m.fmt, m.unit) + (m.annee ? ' <span style="font-size:9px;opacity:.7">('+m.annee+')</span>' : '') +
+      '</div>';
+  }
+  
+  // Description
+  if (m.desc) {
+    ttHtml += '<div style="color:#ccd;font-size:10px;line-height:1.4;margin-bottom:6px;border-bottom:1px solid rgba(255,255,255,.12);padding-bottom:5px">'+m.desc+'</div>';
+  }
+  
+  // Tableau complet de statistiques comparatives dans l'info-bulle
+  ttHtml += '<div style="font-size:9.5px;color:#8ab;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Comparatif Région & Strate</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:10px">' +
+    '<thead><tr style="color:#8ab;font-size:9px;text-align:right">' +
+      '<th style="text-align:left;padding-bottom:3px">Échelle</th>' +
+      '<th style="padding:0 3px;color:#f4a44a">Aude</th>' +
+      '<th style="padding:0 3px">Moy.</th>' +
+      '<th style="padding:0 3px">Méd.</th>' +
+      '<th style="padding:0 3px">Q1</th>' +
+      '<th style="padding:0 3px">Q3</th>' +
+    '</tr></thead><tbody>' +
+    ttStatsRow('Strate (11 dép.)', m.aude, m.stats_strate) +
+    ttStatsRow('Occitanie (13 dép.)', m.occ, m.stats_occ) +
+    ttStatsRow('France (96 dép.)', m.fra, m.stats_fr) +
+    '</tbody></table>' +
+    '<div style="color:#7ab;font-size:8.5px;margin-top:4px;font-style:italic">Unité : '+(m.unit||'—')+'</div>';
+
+  var audeValTxt = valFmt + (m.annee ? ' <span style="opacity:.6;font-size:10px">'+m.annee+'</span>' : '');
+  
+  return '<div class="card" data-ind-id="'+m.id+'"' +
+    ' data-tt="'+encodeURIComponent(ttHtml)+'"' +
+    ' data-aude-lbl="'+encodeURIComponent(m.label)+'"' +
+    ' data-aude-val="'+encodeURIComponent(audeValTxt)+'"' +
+    ' onmouseenter="showCardTip(event,this)" onmousemove="moveCardTip(event)" onmouseleave="hideCardTip()"' +
+    ' onclick="openModal(this.dataset.indId)">' +
+    isNew +
+    '<div class="card-head"><div class="card-label">' + m.label + '</div><div>' + srcBadge + '</div></div>' +
+    '<div class="card-val">' + valFmt + '<span>' + (m.annee || '') + '</span></div>' +
+    (ranksHtml ? '<div class="card-ranks">' + ranksHtml + '</div>' : '') +
+    '</div>';
+}
+
+function openModal(indId) {
+  var m = ALL_META.find(function(x){return x.id===indId;});
+  if (!m) return;
+  
+  var html = '<h3>' + m.label + '</h3>';
+  html += '<div class="modal-meta">' + (m.source||'') + (m.annee ? ' · '+m.annee : '') + (m.unit ? ' · Unité: '+m.unit : '') + '</div>';
+  
+  if (m.desc) {
+    html += '<div class="modal-section"><p style="color:#595959;font-size:12px;line-height:1.5">' + m.desc + '</p></div>';
+  }
+  
+  html += '<div class="modal-section"><h4>Valeurs de référence</h4>';
+  html += '<div class="modal-grid">';
+  html += '<div class="modal-stat-box"><div class="modal-stat-val" style="color:#ED7D31">' + fmt(m.aude,m.fmt,m.unit) + '</div><div class="modal-stat-lbl">Aude (11)</div></div>';
+  if (m.occ !== null && m.occ !== undefined) html += '<div class="modal-stat-box"><div class="modal-stat-val">' + fmt(m.occ,m.fmt,m.unit) + '</div><div class="modal-stat-lbl">Occitanie</div></div>';
+  if (m.fra !== null && m.fra !== undefined) html += '<div class="modal-stat-box"><div class="modal-stat-val">' + fmt(m.fra,m.fmt,m.unit) + '</div><div class="modal-stat-lbl">France métro.</div></div>';
+  html += '</div></div>';
+  
+  if (m.rank_fr || m.rank_strate || m.rank_occ) {
+    html += '<div class="modal-section"><h4>Classements (rang du + élevé au + bas)</h4>';
+    if (m.rank_strate) html += '<div class="modal-rank-row"><span>Strate ('+m.total_strate+' depts)</span><span class="rank-badge '+rankClass(m.rank_strate,m.total_strate)+'">'+m.rank_strate+'/'+m.total_strate+'</span></div>';
+    if (m.rank_occ) html += '<div class="modal-rank-row"><span>Occitanie ('+m.total_occ+' depts)</span><span class="rank-badge '+rankClass(m.rank_occ,m.total_occ)+'">'+m.rank_occ+'/'+m.total_occ+'</span></div>';
+    if (m.rank_fr) html += '<div class="modal-rank-row"><span>France ('+m.total_fr+' depts)</span><span class="rank-badge '+rankClass(m.rank_fr,m.total_fr)+'">'+m.rank_fr+'/'+m.total_fr+'</span></div>';
+    html += '</div>';
+  }
+  
+  function statsBlock(title, sf) {
+    if (!sf || !sf.mean) return '';
+    return '<div class="modal-section"><h4>'+title+'</h4><div class="modal-grid">' +
+      '<div class="modal-stat-box"><div class="modal-stat-val">'+fmtShort(sf.mean,m.fmt)+' '+m.unit+'</div><div class="modal-stat-lbl">Moyenne</div></div>' +
+      '<div class="modal-stat-box"><div class="modal-stat-val">'+fmtShort(sf.median,m.fmt)+' '+m.unit+'</div><div class="modal-stat-lbl">Médiane</div></div>' +
+      '<div class="modal-stat-box"><div class="modal-stat-val">'+fmtShort(sf.q1,m.fmt)+' '+m.unit+'</div><div class="modal-stat-lbl">1er quartile</div></div>' +
+      '<div class="modal-stat-box"><div class="modal-stat-val">'+fmtShort(sf.q3,m.fmt)+' '+m.unit+'</div><div class="modal-stat-lbl">3e quartile</div></div>' +
+      (sf.stdev ? '<div class="modal-stat-box"><div class="modal-stat-val">'+fmtShort(sf.stdev,m.fmt)+' '+m.unit+'</div><div class="modal-stat-lbl">Écart-type</div></div>' : '') +
+      '<div class="modal-stat-box"><div class="modal-stat-val">'+sf.n+'</div><div class="modal-stat-lbl">Depts</div></div>' +
+      '</div></div>';
+  }
+  if (m.stats_strate && m.stats_strate.mean) html += statsBlock('Statistiques — Strate', m.stats_strate);
+  if (m.stats_occ && m.stats_occ.mean) html += statsBlock('Statistiques — Occitanie', m.stats_occ);
+  if (m.stats_fr && m.stats_fr.mean) html += statsBlock('Statistiques — France métropolitaine', m.stats_fr);
+  
+  document.getElementById('modal-content').innerHTML = html;
+  document.getElementById('modal-overlay').classList.add('on');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay') || e.currentTarget.classList.contains('modal-close')) {
+    document.getElementById('modal-overlay').classList.remove('on');
+  }
+}
+
+function buildClassement() {
+  var container = document.getElementById('classement');
+  var themeHTML = '<div class="theme-bar">';
+  THEMES.filter(function(t){ return t.id !== 'all'; }).forEach(function(th) {
+    themeHTML += '<button class="theme-btn'+(th.id===currentThemeRank?' on':'')+'" data-theme-id="'+th.id+'" onclick="setThemeRank(this.dataset.themeId)">' + th.lbl + '</button>';
+  });
+  themeHTML += '</div>';
+
+  var scopes = [{k:'all',lbl:'Tous ('+Object.keys(DEPTS).length+')'},{k:'strate',lbl:'Strate ('+STRATE.length+')'},{k:'occ',lbl:'Occitanie ('+OCC.length+')'}];
+  var scopeHTML = '<div class="scope-bar" id="rank-scope-bar" style="display:flex;gap:6px;align-items:center;padding:8px 0 4px;flex-wrap:wrap"><span style="font-size:11px;color:#888;margin-right:4px">Périmètre :</span>' +
+    scopes.map(function(s){ return '<button class="scope-btn'+(currentRankScope===s.k?' on':'')+'" data-scope="'+s.k+'" onclick="setRankScope(this.dataset.scope)">'+s.lbl+'</button>'; }).join('') +
+    '</div>';
+  
+  var deptOptions = '<option value="">— Comparer un département —</option>';
+  Object.keys(DEPTS).sort().forEach(function(c) {
+    deptOptions += '<option value="'+c+'">'+c+' - '+DEPTS[c]+'</option>';
+  });
+  
+  container.innerHTML = themeHTML +
+    '<div class="ind-select-bar" id="rank-ind-bar" style="min-height:32px"></div>' +
+    scopeHTML +
+    '<div class="controls">' +
+      '<label style="color:#595959;font-size:12px">Comparer avec :</label>' +
+      '<select class="dep-select" id="dept-sel" onchange="setSelectedDept(this.value)">' + deptOptions + '</select>' +
+    '</div>' +
+    '<div style="overflow-x:auto"><table id="rank-table"><thead><tr>' +
+      '<th style="width:28px">#</th><th>Département</th><th style="width:110px">Valeur</th><th style="min-width:120px">Rang / Jauge</th>' +
+    '</tr></thead><tbody id="rank-tbody"></tbody></table></div>';
+  
+  renderRankIndBar();
+}
+
+function setRankScope(scope) {
+  currentRankScope = scope;
+  var bar = document.getElementById('rank-scope-bar');
+  if (bar) bar.querySelectorAll('.scope-btn').forEach(function(b){
+    b.classList.toggle('on', b.dataset.scope === scope);
+  });
+  renderRankTable();
+}
+
+function setThemeRank(thId) {
+  currentThemeRank = thId;
+  currentIndRank = null;
+  document.querySelectorAll('#classement .theme-btn').forEach(function(b){
+    b.classList.toggle('on', b.dataset.themeId === thId);
+  });
+  renderRankIndBar();
+}
+
+function renderRankIndBar() {
+  var bar = document.getElementById('rank-ind-bar');
+  if (!currentThemeRank) {
+    if (bar) bar.innerHTML = '<span style="color:#888;font-size:12px;padding:8px;display:block">&#x2190; Sélectionnez un thème pour afficher les indicateurs</span>';
+    var tbody = document.getElementById('rank-tbody');
+    if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:24px;color:#aaa;font-style:italic">Sélectionnez un thème ci-dessus</td></tr>';
+    return;
+  }
+  var inds = ALL_META.filter(function(m){
+    return m.themes && (m.themes.indexOf(currentThemeRank) >= 0 || (currentThemeRank==='ase' && m.themes.indexOf('jeunesse')>=0));
+  });
+  if (!inds.find(function(m){return m.id===currentIndRank;})) currentIndRank = inds.length ? inds[0].id : null;
+  var html = '';
+  inds.forEach(function(m) {
+    html += '<button class="ind-btn'+(m.id===currentIndRank?' on':'')+'" data-ind-id="'+m.id+'" onclick="setIndRank(this.dataset.indId)">' + m.label + '</button>';
+  });
+  if (bar) bar.innerHTML = html || '<span style="color:#888;font-size:12px">Aucun indicateur pour ce thème</span>';
+  renderRankTable();
+}
+
+function setIndRank(indId) {
+  currentIndRank = indId;
+  document.querySelectorAll('#rank-ind-bar .ind-btn').forEach(function(b){
+    b.classList.toggle('on', b.dataset.indId === indId);
+  });
+  renderRankTable();
+}
+
+function setSelectedDept(code) {
+  selectedDept = code || null;
+  renderRankTable();
+}
+
+function renderRankTable() {
+  var tbody = document.getElementById('rank-tbody');
+  if (!tbody || !currentIndRank) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px">Sélectionnez un indicateur</td></tr>';
+    return;
+  }
+  var m = ALL_META.find(function(x){return x.id===currentIndRank;});
+  if (!m) return;
+  
+  var snap = getSnap(currentIndRank) || DREES_SNAP[currentIndRank];
+  var html = '';
+  
+  if (snap && Object.keys(snap).length) {
+    var scopeCodes = null;
+    if (currentRankScope === 'strate') scopeCodes = STRATE;
+    else if (currentRankScope === 'occ') scopeCodes = OCC;
+    var items = Object.keys(snap).map(function(c){
+      return {code:c, name:DEPTS[c]||('Dép. '+c), val:snap[c]};
+    }).filter(function(x){
+      if (x.val === null || x.val === undefined) return false;
+      if (x.code === 'FRA' || x.code === 'OCC') return false;
+      if (scopeCodes && scopeCodes.indexOf(x.code) < 0) return false;
+      return true;
+    });
+    items.sort(function(a,b){return b.val-a.val;});
+    var maxVal = items[0] ? items[0].val : 1;
+    
+    items.forEach(function(item, i) {
+      var isAude = item.code === '11';
+      var isSel = selectedDept && item.code === selectedDept;
+      var rowClass = isAude ? 'aude-row' : (isSel ? 'sel-row' : '');
+      var pct = (item.val / maxVal * 100).toFixed(1);
+      html += '<tr class="'+rowClass+'">' +
+        '<td>'+(i+1)+'</td>' +
+        '<td><strong>'+item.code+'</strong> '+item.name+'</td>' +
+        '<td><strong>'+fmt(item.val,m.fmt,m.unit)+'</strong></td>' +
+        '<td><div class="gauge"><div class="gauge-fill'+(isAude?' aude':'')+'" style="width:'+pct+'%"></div></div></td>' +
+        '</tr>';
+    });
+  } else {
+    var rankHtml = '';
+    if (m.rank_fr) rankHtml += '<span class="rank-badge '+rankClass(m.rank_fr,m.total_fr)+'">France '+m.rank_fr+'/'+m.total_fr+'</span> ';
+    if (m.rank_occ) rankHtml += '<span class="rank-badge '+rankClass(m.rank_occ,m.total_occ)+'">Occitanie '+m.rank_occ+'/'+m.total_occ+'</span> ';
+    if (m.rank_strate) rankHtml += '<span class="rank-badge '+rankClass(m.rank_strate,m.total_strate)+'">Strate '+m.rank_strate+'/'+m.total_strate+'</span>';
+    
+    var stHtml = '';
+    if (m.stats_strate && m.stats_strate.mean) {
+      var sf = m.stats_strate;
+      stHtml = '<tr><td colspan="5" style="padding:8px 12px;background:#f4f5f7;font-size:11px;color:#595959">' +
+        '<strong>Strate ('+m.total_strate+' dép.) :</strong> Moy. '+fmtShort(sf.mean,m.fmt)+' '+m.unit +
+        ' | Méd. '+fmtShort(sf.median,m.fmt)+' | Min '+fmtShort(sf.q1,m.fmt)+' | Max '+fmtShort(sf.q3,m.fmt) +
+        '</td></tr>';
+    }
+    
+    html = '<tr class="aude-row"><td>'+m.rank_fr+'</td>' +
+      '<td><strong>11</strong> Aude</td>' +
+      '<td><strong>'+fmt(m.aude,m.fmt,m.unit)+'</strong></td>' +
+      '<td>'+rankHtml+'</td>' +
+      '</tr>' + stHtml +
+      '<tr><td colspan="5" style="text-align:center;color:#aaa;font-size:11px;font-style:italic;padding:12px">' +
+      'Classement complet non disponible — données cartographiques uniquement pour les indicateurs PA/PH' +
+      '</td></tr>';
+  }
+  
+  tbody.innerHTML = html;
+  if (selectedDept) {
+    var rows = tbody.querySelectorAll('.sel-row');
+    if (rows.length) rows[0].scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+}
+
+function buildEvolution() {
+  var container = document.getElementById('evolution');
+  
+  var themeHTML = '<div class="theme-bar">';
+  THEMES.filter(function(t){ return t.id !== 'all'; }).forEach(function(th) {
+    themeHTML += '<button class="theme-btn'+(th.id===currentThemeEvo?' on':'')+'" data-theme-id="'+th.id+'" onclick="setThemeEvo(this.dataset.themeId)">' + th.lbl + '</button>';
+  });
+  themeHTML += '</div>';
+  
+  var deptOptions = '<option value="">— Comparer avec un département —</option>';
+  Object.keys(DEPTS).sort().forEach(function(c) {
+    if (c !== '11') deptOptions += '<option value="'+c+'">'+c+' - '+DEPTS[c]+'</option>';
+  });
+  
+  container.innerHTML = themeHTML +
+    '<div class="ind-select-bar" id="evo-ind-bar"></div>' +
+    '<div class="controls">' +
+      '<label style="color:#595959;font-size:12px">Comparer avec :</label>' +
+      '<select class="dep-select" id="evo-dept-sel" onchange="setEvoCompareDept(this.value)">' + deptOptions + '</select>' +
+    '</div>' +
+    '<div id="evo-chart"><svg id="evo-svg" viewBox="0 0 700 300" style="display:block;width:100%;max-height:320px"></svg><div class="evo-legend" id="evo-legend" style="margin-top:8px"></div></div>';
+  
+  renderEvoIndBar();
+}
+
+function setThemeEvo(thId) {
+  currentThemeEvo = thId;
+  currentIndEvo = null;
+  document.querySelectorAll('#evolution .theme-btn').forEach(function(b){
+    b.classList.toggle('on', b.dataset.themeId === thId);
+  });
+  renderEvoIndBar();
+}
+
+function renderEvoIndBar() {
+  var bar = document.getElementById('evo-ind-bar');
+  if (!currentThemeEvo) {
+    if (bar) bar.innerHTML = '<span style="color:#888;font-size:12px;padding:8px;display:block">&#x2190; Sélectionnez un thème pour afficher les indicateurs</span>';
+    var svg = document.getElementById('evo-svg');
+    if (svg) svg.innerHTML = '';
+    var leg = document.getElementById('evo-legend');
+    if (leg) leg.innerHTML = '<div style="color:#aaa;font-style:italic;font-size:12px;padding:8px">Sélectionnez un thème ci-dessus</div>';
+    return;
+  }
+  var inds = ALL_META.filter(function(m){
+    return m.themes && (m.themes.indexOf(currentThemeEvo) >= 0 || (currentThemeEvo==='ase' && m.themes.indexOf('jeunesse')>=0));
+  });
+  
+  inds = inds.filter(function(m){ return !!DREES_TS[m.id]; });
+  
+  var indsWithTs = inds;
+  if (!currentIndEvo || !inds.find(function(m){return m.id===currentIndEvo;})) {
+    currentIndEvo = indsWithTs.length ? indsWithTs[0].id : (inds.length ? inds[0].id : null);
+  }
+  var html = '';
+  inds.forEach(function(m) {
+    html += '<button class="ind-btn'+(m.id===currentIndEvo?' on':'')+'" data-ind-id="'+m.id+'" onclick="setIndEvo(this.dataset.indId)">' + m.label + '</button>';
+  });
+  
+  var bar = document.getElementById('evo-ind-bar');
+  if (bar) bar.innerHTML = html || '<span style="color:#888;font-size:12px">Aucune série temporelle pour ce thème</span>';
+  drawEvoChart();
+}
+
+function setIndEvo(indId) {
+  currentIndEvo = indId;
+  document.querySelectorAll('#evo-ind-bar .ind-btn').forEach(function(b){
+    b.classList.toggle('on', b.dataset.indId === indId);
+  });
+  drawEvoChart();
+}
+
+function setEvoCompareDept(code) {
+  selectedDeptEvo = code || null;
+  drawEvoChart();
+}
+
+function drawEvoChart() {
+  var svg = document.getElementById('evo-svg');
+  var legend = document.getElementById('evo-legend');
+  if (!svg || !currentIndEvo) return;
+  var m = ALL_META.find(function(x){return x.id===currentIndEvo;});
+  if (!m) return;
+  
+  if (!DREES_TS[currentIndEvo]) {
+    var rankHtml = '';
+    if (m.rank_fr) rankHtml += '<span class="rank-badge '+rankClass(m.rank_fr,m.total_fr)+'">France '+m.rank_fr+'/'+m.total_fr+'</span> ';
+    if (m.rank_occ) rankHtml += '<span class="rank-badge '+rankClass(m.rank_occ,m.total_occ)+'">Occitanie '+m.rank_occ+'/'+m.total_occ+'</span> ';
+    if (m.rank_strate) rankHtml += '<span class="rank-badge '+rankClass(m.rank_strate,m.total_strate)+'">Strate '+m.rank_strate+'/'+m.total_strate+'</span>';
+    svg.innerHTML = '';
+    if (legend) legend.innerHTML = '<div style="padding:16px;background:#f4f5f7;border-radius:8px;font-size:12px;color:#595959;line-height:1.8">' +
+      '<div style="font-size:20px;font-weight:800;color:#ED7D31;margin-bottom:4px">'+fmt(m.aude,m.fmt,m.unit)+'</div>' +
+      '<div style="font-size:13px;color:#1a1a2e;font-weight:600;margin-bottom:6px">'+m.label+' — Aude (11)</div>' +
+      '<div style="margin-bottom:6px">'+rankHtml+'</div>' +
+      '<div style="color:#888;font-size:11px;font-style:italic">Série temporelle non disponible pour cet indicateur. Millésime '+m.annee+'.</div>' +
+      '</div>';
+    return;
+  }
+  
+  var ts = DREES_TS[currentIndEvo];
+  var audeTs = ts['11'] || {};
+  var years = Object.keys(audeTs).sort();
+  if (!years.length) return;
+  
+  var occTs = {};
+  if (ts['OCC']) {
+    occTs = ts['OCC'];
+  } else {
+    years.forEach(function(y) {
+      var vals = OCC.map(function(c){return ts[c] && ts[c][y];}).filter(function(v){return v !== null && v !== undefined;});
+      if (vals.length) occTs[y] = vals.reduce(function(a,b){return a+b;},0) / vals.length;
+    });
+  }
+  
+  var compTs = selectedDeptEvo && ts[selectedDeptEvo] ? ts[selectedDeptEvo] : null;
+  if (!compTs && selectedDeptEvo) {
+    var compSnap = getSnap(currentIndEvo);
+    if (compSnap && compSnap[selectedDeptEvo] !== undefined) {
+      var lastYear = years[years.length-1];
+      compTs = {}; compTs[lastYear] = compSnap[selectedDeptEvo];
+    }
+  }
+  
+  var W = 700, H = 300, PL = 70, PR = 20, PT = 20, PB = 40;
+  var cW = W - PL - PR, cH = H - PT - PB;
+  
+  var allVals = years.map(function(y){return audeTs[y];});
+  years.forEach(function(y){if(occTs[y]) allVals.push(occTs[y]);});
+  if (compTs) years.forEach(function(y){if(compTs[y]) allVals.push(compTs[y]);});
+  
+  var minV = Math.min.apply(null, allVals) * 0.95;
+  var maxV = Math.max.apply(null, allVals) * 1.05;
+  
+  var yr0 = parseInt(years[0]), yr1 = parseInt(years[years.length-1]);
+  function xPos(y) { return yr1 === yr0 ? PL + cW/2 : PL + (y - yr0) / (yr1 - yr0) * cW; }
+  function yPos(v) { return (maxV === minV) ? PT + cH/2 : PT + cH - (v - minV) / (maxV - minV) * cH; }
+  
+  function makePath(tsData, color, dashed) {
+    var pts = years.filter(function(y){return tsData[y]!==undefined && tsData[y]!==null;});
+    if (!pts.length) return '';
+    var d = pts.map(function(y,i){
+      return (i===0?'M':'L') + xPos(parseInt(y)).toFixed(1) + ',' + yPos(tsData[y]).toFixed(1);
+    }).join(' ');
+    return '<path d="'+d+'" fill="none" stroke="'+color+'" stroke-width="'+(dashed?1.5:2.5)+'" '+(dashed?'stroke-dasharray="5,3"':'')+' />';
+  }
+  
+  var svgHtml = '';
+  var yTicks = 5;
+  for (var i = 0; i <= yTicks; i++) {
+    var yVal = minV + (maxV - minV) * i / yTicks;
+    var y = yPos(yVal);
+    svgHtml += '<line x1="'+PL+'" y1="'+y.toFixed(1)+'" x2="'+(W-PR)+'" y2="'+y.toFixed(1)+'" stroke="#dde1e7" stroke-width="1" />';
+    svgHtml += '<text x="'+(PL-5)+'" y="'+(y+4).toFixed(1)+'" fill="#888" font-size="9" text-anchor="end">'+fmtShort(yVal, m.fmt)+'</text>';
+  }
+  
+  var step = years.length > 20 ? 5 : years.length > 10 ? 2 : 1;
+  years.forEach(function(y, i) {
+    if (i % step !== 0) return;
+    var x = xPos(parseInt(y));
+    svgHtml += '<text x="'+x.toFixed(1)+'" y="'+(H-PB+15)+'" fill="#888" font-size="9" text-anchor="middle">'+y+'</text>';
+  });
+  
+  var fraTs = ts['FRA'] || {};
+  var fraVals = Object.values(fraTs).filter(function(v){return v!=null;});
+  var audeVals2 = Object.values(audeTs).filter(function(v){return v!=null;});
+  var fraAvg = fraVals.length ? fraVals.reduce(function(a,b){return a+b;},0)/fraVals.length : 0;
+  var audeAvg = audeVals2.length ? audeVals2.reduce(function(a,b){return a+b;},0)/audeVals2.length : 1;
+  var fraHasData = fraVals.length > 0 && fraAvg / audeAvg < 50; 
+  
+  if (fraHasData) allVals = allVals.concat(fraVals);
+  
+  svgHtml += makePath(occTs, '#2E7D32', true);
+  if (fraHasData) svgHtml += makePath(fraTs, '#4472C4', true);
+  if (compTs) svgHtml += makePath(compTs, '#bb80f0', true);
+  svgHtml += makePath(audeTs, '#ED7D31', false);
+  
+  var lastY = years[years.length - 1];
+  if (audeTs[lastY] !== undefined) {
+    var lx = xPos(parseInt(lastY)), ly = yPos(audeTs[lastY]);
+    svgHtml += '<circle cx="'+lx.toFixed(1)+'" cy="'+ly.toFixed(1)+'" r="4" fill="#ED7D31" />';
+  }
+  
+  svg.innerHTML = svgHtml;
+  
+  var legHtml = '<div class="evo-legend-item"><div class="evo-legend-dot" style="background:#ED7D31"></div>Aude (11)</div>';
+  legHtml += '<div class="evo-legend-item"><div class="evo-legend-dot" style="background:#2E7D32;opacity:.7;border:1px dashed #2E7D32"></div>Moy. Occitanie</div>';
+  legHtml += '<div class="evo-legend-item"><div class="evo-legend-dot" style="background:#4472C4;opacity:.7;border:1px dashed #4472C4"></div>France</div>';
+  if (selectedDeptEvo) legHtml += '<div class="evo-legend-item"><div class="evo-legend-dot" style="background:#bb80f0"></div>' + (DEPTS[selectedDeptEvo]||selectedDeptEvo) + '</div>';
+  legend.innerHTML = legHtml;
+}
+
+var MAP_CARTEABLE = {};
+ALL_META.forEach(function(m){ if (DREES_SNAP[m.id] && Object.keys(DREES_SNAP[m.id]).length > 0) MAP_CARTEABLE[m.id] = true; });
+ALL_META.forEach(function(m){ if (INSEE_SNAP && INSEE_SNAP[m.id] && Object.keys(INSEE_SNAP[m.id]).length > 0) MAP_CARTEABLE[m.id] = true; });
+
+function getSnap(indId) {
+  return DREES_SNAP[indId] || (INSEE_SNAP && INSEE_SNAP[indId]) || null;
+}
+
+function initCarte() {
+  var container = document.getElementById('carte');
+  if (container.dataset.built) return;
+  container.dataset.built = '1';
+  
+  var themeHTML = '<div class="theme-bar">';
+  THEMES.filter(function(t){ return t.id !== 'all'; }).forEach(function(th) {
+    themeHTML += '<button class="theme-btn'+(th.id===currentThemeCarte?' on':'')+'" data-theme-id="'+th.id+'" onclick="setThemeCarte(this.dataset.themeId)">' + th.lbl + '</button>';
+  });
+  themeHTML += '</div>';
+  
+  container.innerHTML = themeHTML +
+    '<div class="ind-select-bar" id="carte-ind-bar"></div>' +
+    '<div class="map-wrap">' +
+      '<div id="map-svg-wrap"><div class="msg"><span class="spinner"></span> Chargement de la carte...</div></div>' +
+      '<div id="map-legend"><h4>Légende</h4><div id="legend-items"></div></div>' +
+    '</div>';
+  
+  renderCarteIndBar();
+  loadGeo();
+}
+
+function setThemeCarte(thId) {
+  currentThemeCarte = thId;
+  currentIndCarte = null;
+  document.querySelectorAll('#carte .theme-btn').forEach(function(b){
+    b.classList.toggle('on', b.dataset.themeId === thId);
+  });
+  renderCarteIndBar();
+}
+
+function renderCarteIndBar() {
+  var inds = (currentThemeCarte === 'all' ? ALL_META : ALL_META.filter(function(m){
+    return m.themes && m.themes.indexOf(currentThemeCarte) >= 0;
+  })).filter(function(m){ return MAP_CARTEABLE[m.id]; });
+  
+  if (!currentIndCarte || !inds.find(function(m){return m.id===currentIndCarte;})) {
+    currentIndCarte = inds.length ? inds[0].id : null;
+  }
+  
+  var html = '';
+  inds.forEach(function(m) {
+    html += '<button class="ind-btn'+(m.id===currentIndCarte?' on':'')+'" data-ind-id="'+m.id+'" onclick="setIndCarte(this.dataset.indId)">' + m.label + '</button>';
+  });
+  
+  var bar = document.getElementById('carte-ind-bar');
+  if (bar) bar.innerHTML = html || '<span style="color:#888;font-size:12px">Aucun indicateur cartographiable pour ce thème</span>';
+  
+  colorMap();
+}
+
+function setIndCarte(indId) {
+  currentIndCarte = indId;
+  document.querySelectorAll('#carte-ind-bar .ind-btn').forEach(function(b){
+    b.classList.toggle('on', b.dataset.indId === indId);
+  });
+  colorMap();
+}
+
+function loadGeo() {
+  if (geoCache) { buildSVGMap(geoCache); colorMap(); return; }
+  fetch('https://raw.githubusercontent.com/gregoiredavid/france-geojson/master/departements-version-simplifiee.geojson')
+    .then(function(r){ return r.json(); })
+    .then(function(geo) {
+      geoCache = geo;
+      mapBuilt = true;
+      buildSVGMap(geo);
+      colorMap();
+    })
+    .catch(function() {
+      var wrap = document.getElementById('map-svg-wrap');
+      if (wrap) wrap.innerHTML = '<div class="msg"><div class="ico">🌐</div><strong>Carte indisponible</strong><p>Connexion internet requise.</p></div>';
+    });
+}
+
+function buildSVGMap(geo) {
+  var W=560, H=460;
+  var lonMin=-5.3,lonMax=9.8,latMin=41.2,latMax=51.2;
+  function proj(lon,lat){ return [(lon-lonMin)/(lonMax-lonMin)*W, H-(lat-latMin)/(latMax-latMin)*H]; }
+  function rings2path(rings) {
+    return rings.map(function(ring){
+      return ring.map(function(p,i){ var xy=proj(p[0],p[1]); return (i?'L':'M')+xy[0].toFixed(1)+','+xy[1].toFixed(1); }).join('')+' Z';
+    }).join(' ');
+  }
+  var parts = ['<svg class="map-svg" viewBox="0 0 '+W+' '+H+'" style="width:100%;height:100%;max-height:100%">'];
+  geo.features.forEach(function(f){
+    var raw=f.properties.code; if(!raw) return;
+    var code=raw.length===1?'0'+raw:raw;
+    var d='';
+    if(f.geometry.type==='Polygon') d=rings2path(f.geometry.coordinates);
+    else if(f.geometry.type==='MultiPolygon') d=f.geometry.coordinates.map(rings2path).join(' ');
+    if(!d) return;
+    parts.push('<path data-code="'+code+'" d="'+d+'" fill="#2a3560"'+(code==='11'?' class="hl"':'')+' />');
+  });
+  parts.push('</svg>');
+  var wrap = document.getElementById('map-svg-wrap');
+  if (wrap) {
+    wrap.innerHTML = parts.join('');
+    var tt = document.getElementById('tooltip');
+    wrap.querySelectorAll('path[data-code]').forEach(function(path){
+      path.addEventListener('mousemove', function(e){
+        var code=path.dataset.code;
+        if (!currentIndCarte || !DREES_SNAP[currentIndCarte]) return;
+        var val=DREES_SNAP[currentIndCarte][code];
+        var m=ALL_META.find(function(x){return x.id===currentIndCarte;});
+        tt.style.display='block';
+        tt.style.left=(e.clientX+14)+'px';
+        tt.style.top=(e.clientY-30)+'px';
+        tt.innerHTML='<strong>'+(DEPTS[code]||code)+'</strong> ('+code+')<br>'+(m?fmt(val,m.fmt,m.unit):'—');
+      });
+      path.addEventListener('mouseleave', function(){tt.style.display='none';});
+      path.addEventListener('click', function(){
+        var code=path.dataset.code;
+        var m=ALL_META.find(function(x){return x.id===currentIndCarte;});
+        if(m) openModal(m.id);
+      });
+    });
+  }
+}
+
+function colorMap() {
+  if (!mapBuilt || !currentIndCarte) return;
+  var snap = DREES_SNAP[currentIndCarte];
+  var m = ALL_META.find(function(x){return x.id===currentIndCarte;});
+  if (!snap || !m) return;
+  
+  var wrap = document.getElementById('map-svg-wrap');
+  if (!wrap || !wrap.querySelector('svg')) return;
+  
+  var vals = Object.values(snap).filter(function(v){return v!==null&&v!==undefined;});
+  if (!vals.length) return;
+  
+  var minV=Math.min.apply(null,vals), maxV=Math.max.apply(null,vals);
+  var colors = ['#1a3a6a','#2060a0','#4090d0','#69B8F0','#FFA040','#ED7D31','#c85020','#8B1A00'];
+  
+  function getColor(val) {
+    if (val===null||val===undefined) return '#2a3560';
+    var t=(val-minV)/(maxV-minV||1);
+    var idx=Math.min(Math.floor(t*(colors.length-1)), colors.length-2);
+    var frac=t*(colors.length-1)-idx;
+    function hexToRgb(h){var r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);return[r,g,b];}
+    function lerp(a,b,t){return Math.round(a+(b-a)*t);}
+    var c1=hexToRgb(colors[idx]), c2=hexToRgb(colors[idx+1]);
+    return 'rgb('+lerp(c1[0],c2[0],frac)+','+lerp(c1[1],c2[1],frac)+','+lerp(c1[2],c2[2],frac)+')';
+  }
+  
+  wrap.querySelectorAll('path[data-code]').forEach(function(path){
+    var code=path.dataset.code;
+    var val=snap[code];
+    path.setAttribute('fill', getColor(val));
+    if (code==='11') { path.setAttribute('stroke','#ffffff'); path.setAttribute('stroke-width','1.5'); }
+    else { path.setAttribute('stroke','#fff'); path.setAttribute('stroke-width','0.5'); }
+  });
+  
+  var legEl=document.getElementById('legend-items');
+  if (legEl) {
+    var steps=6;
+    var legHtml='';
+    for(var i=steps;i>=0;i--){
+      var v=minV+(maxV-minV)*i/steps;
+      legHtml+='<div class="legend-item"><div class="legend-swatch" style="background:'+getColor(v)+'"></div>' +
+        '<span>'+fmtShort(v,m.fmt)+(m.unit?' '+m.unit:'')+'</span></div>';
+    }
+    legEl.innerHTML=legHtml;
+  }
+}
+
+async function reloadLive() {
+  const btn = document.getElementById('reload-btn');
+  const lastUpdEl = document.getElementById('lastupd');
+
+  if (btn && btn.disabled) return;
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Chargement...';
+  }
+
+  try {
+    if (typeof refreshLog !== 'undefined') refreshLog.length = 0;
+    if (typeof newCount !== 'undefined') newCount = 0;
+
+    if (typeof addLog === 'function') addLog('⏳', 'Rechargement des données démarré...', false);
+
+    const resultats = await Promise.allSettled([
+      typeof loadCAF === 'function' ? loadCAF() : Promise.reject(new Error('loadCAF introuvable')),
+      typeof loadDREES === 'function' ? loadDREES() : Promise.reject(new Error('loadDREES introuvable')),
+      typeof loadAude === 'function' ? loadAude() : Promise.reject(new Error('loadAude introuvable')),
+      typeof loadINSEE === 'function' ? loadINSEE() : Promise.reject(new Error('loadINSEE introuvable'))
+    ]);
+
+    if (typeof rebuildAllMeta === 'function') rebuildAllMeta();
+    if (typeof renderDashCards === 'function') renderDashCards();
+    else if (typeof buildDash === 'function') buildDash();
+
+    if (typeof renderRankIndBar === 'function') renderRankIndBar();
+    if (typeof renderRankTable === 'function') renderRankTable();
+    if (typeof renderEvoIndBar === 'function') renderEvoIndBar();
+    if (typeof drawEvoChart === 'function') drawEvoChart();
+    if (typeof renderCarteIndBar === 'function') renderCarteIndBar();
+    if (typeof colorMap === 'function') colorMap();
+
+    const nbOk = resultats.filter(r => r.status === 'fulfilled').length;
+    const erreurs = resultats.filter(r => r.status === 'rejected');
+
+    if (typeof addLog === 'function') {
+      if (erreurs.length === 0) {
+        addLog('✅', 'Rechargement terminé : les ' + nbOk + ' sources ont été interrogées.', false);
+      } else {
+        addLog('⚠️', 'Rechargement terminé avec ' + nbOk + ' source(s) OK et ' + erreurs.length + ' erreur(s).', false);
+      }
+    }
+
+    if (lastUpdEl) {
+      const heure = new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      lastUpdEl.textContent = 'Dernière MAJ : ' + heure;
+    }
+
+    if (btn) {
+      btn.textContent = erreurs.length === 0 ? 'Données rechargées' : 'Rechargement partiel';
+      setTimeout(() => { btn.textContent = 'Recharger données'; }, 2500);
+    }
+  } catch (erreur) {
+    console.error('Erreur pendant le rechargement :', erreur);
+    if (btn) {
+      btn.textContent = 'Erreur de chargement';
+      setTimeout(() => { btn.textContent = 'Recharger données'; }, 3000);
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+window.reloadLive = reloadLive;
+
+function addLog(ico, msg, isNew) {
+  var ts = new Date().toLocaleTimeString('fr-FR');
+  refreshLog.unshift({ts:ts, ico:ico, msg:msg, isNew:!!isNew});
+  if (refreshLog.length > 100) refreshLog.pop();
+}
+
+async function loadCAF() {
+  try {
+    addLog('⏳', 'Chargement CAF...');
+    var url = 'https://data.caf.fr/api/explore/v2.1/catalog/datasets/s_ben_dep-copy/records?limit=100&where=numdep%3D%2211%22&order_by=dtreffre%20DESC';
+    var r = await fetch(url);
+    if (!r.ok) throw new Error('CAF HTTP '+r.status);
+    var data = await r.json();
+    if (!data.results || !data.results.length) throw new Error('CAF: 0 résultats');
+    
+    var rec = data.results[0];
+    var dateRef = rec.dtreffre || 'inconnue';
+    
+    var prevIds = CAF_META.map(function(m){return m.id;});
+    CAF_META = [];
+    
+    var CAF_FIELDS = [
+      {key:'indfoy_rsa', label:'Foyers RSA', fmt:'int', unit:'foyers', themes:['social','financier']},
+      {key:'indmtt_rsa', label:'Montant RSA versé', fmt:'eur0', unit:'€', themes:['social','financier']},
+      {key:'indben_aah', label:'Bénéficiaires AAH', fmt:'int', unit:'', themes:['handicap']},
+      {key:'indmtt_aah', label:'Montant AAH versé', fmt:'eur0', unit:'€', themes:['handicap','financier']},
+      {key:'indben_aeeh', label:'Bénéficiaires AEEH', fmt:'int', unit:'', themes:['handicap']},
+      {key:'indben_ajpa', label:'Bénéficiaires AJPA', fmt:'int', unit:'', themes:['ages']},
+      {key:'indmtt_ajpa', label:'Montant AJPA versé', fmt:'eur0', unit:'€', themes:['ages','financier']},
+      {key:'indben_ajpp', label:'Bénéficiaires AJPP', fmt:'int', unit:'', themes:['handicap']},
+      {key:'indfoy_apl', label:'Foyers APL', fmt:'int', unit:'foyers', themes:['social']},
+      {key:'indmtt_apl', label:'Montant APL versé', fmt:'eur0', unit:'€', themes:['social','financier']},
+      {key:'indfoy_alf', label:'Foyers ALF', fmt:'int', unit:'foyers', themes:['social']},
+      {key:'indfoy_als', label:'Foyers ALS', fmt:'int', unit:'foyers', themes:['social']},
+      {key:'indfoy_af', label:'Foyers allocations familiales', fmt:'int', unit:'foyers', themes:['social']},
+      {key:'indmtt_af', label:'Montant AF versé', fmt:'eur0', unit:'€', themes:['social','financier']},
+      {key:'indfoy_cf', label:'Foyers complément familial', fmt:'int', unit:'foyers', themes:['social']},
+      {key:'indfoy_ars', label:'Foyers ARS', fmt:'int', unit:'foyers', themes:['social']},
+      {key:'indfoy_asf', label:'Foyers ASF', fmt:'int', unit:'foyers', themes:['social']},
+      {key:'indfoy_ppa', label:'Foyers prime activité', fmt:'int', unit:'foyers', themes:['social','financier']},
+      {key:'indmtt_ppa', label:'Montant PPA versé', fmt:'eur0', unit:'€', themes:['social','financier']},
+    ];
+    
+    CAF_FIELDS.forEach(function(f) {
+      var val = rec[f.key];
+      if (val === null || val === undefined) return;
+      var isNew = prevIds.indexOf('caf_'+f.key) < 0;
+      if (isNew && prevIds.length > 0) newCount++;
+      CAF_META.push({
+        id: 'caf_'+f.key,
+        label: f.label,
+        unit: f.unit,
+        fmt: f.fmt,
+        themes: f.themes,
+        aude: val,
+        occ: null, fra: null,
+        rank_fr: null, rank_strate: null, rank_occ: null,
+        total_fr: 96, total_strate: 11, total_occ: 13,
+        stats_fr: {}, stats_strate: {}, stats_occ: {},
+        has_ts: false,
+        source: 'CAF — données mensuelles',
+        annee: dateRef,
+        desc: 'Donnée mensuelle CAF pour le département de l\'Aude. Période de référence: '+dateRef+'.',
+        isNew: isNew && prevIds.length > 0
+      });
+    });
+    
+    addLog('✅', 'CAF chargée: '+CAF_META.length+' indicateurs', true);
+  } catch(e) {
+    addLog('❌', 'CAF erreur: '+e.message);
+  }
+}
+
+async function loadAude() {
+  var datasets = [
+    {url:'cd11_etablissements_pa', label:'Établissements PA', themes:['ages','aude']},
+    {url:'cd11_etablissements_ph', label:'Établissements PH', themes:['handicap','aude']},
+    {url:'cd11_eaje', label:'Établissements EAJE', themes:['social','aude']},
+    {url:'cd11_mds', label:'Maisons De la Solidarité', themes:['social','aude']},
+  ];
+  
+  for (var i=0; i<datasets.length; i++) {
+    var ds = datasets[i];
+    try {
+      var count = null;
+      var url = 'https://opendata.aude.fr/api/explore/v2.1/catalog/datasets/'+ds.url+'/records?limit=1';
+      var r = await fetch(url);
+      if (r.ok) {
+        var data = await r.json();
+        count = data.total_count || 0;
+      } else {
+        var url1 = 'https://opendata.aude.fr/api/records/1.0/search/?dataset='+ds.url+'&rows=1';
+        var r1 = await fetch(url1);
+        if (!r1.ok) throw new Error('Erreur API Aude');
+        var data1 = await r1.json();
+        count = data1.nhits || 0;
+      }
+      
+      var existing = AUDE_META.find(function(m){return m.id==='aude_'+ds.url;});
+      var isNew = !existing;
+      if (isNew && AUDE_META.length > 0) newCount++;
+      
+      if (existing) {
+        existing.aude = count;
+        existing.annee = new Date().getFullYear();
+      } else {
+        AUDE_META.push({
+          id: 'aude_'+ds.url,
+          label: ds.label+' (nb)',
+          unit: 'établissements',
+          fmt: 'int',
+          themes: ds.themes,
+          aude: count,
+          occ: null, fra: null,
+          rank_fr: null, rank_strate: null, rank_occ: null,
+          total_fr: 96, total_strate: 11, total_occ: 13,
+          stats_fr: {}, stats_strate: {}, stats_occ: {},
+          has_ts: false,
+          source: 'Open Data Aude',
+          annee: new Date().getFullYear(),
+          desc: 'Nombre d\''+ds.label+' dans le département de l\'Aude.',
+          isNew: isNew
+        });
+      }
+      addLog('✅', ds.label+': '+count+' établissements', true);
+    } catch(e) {
+      addLog('❌', ds.label+' erreur: '+e.message);
+    }
+  }
+}
+
+async function loadINSEE() {
+  addLog('ℹ️', 'INSEE : instantané figé.');
+  if (typeof INSEE_META === 'undefined' || !INSEE_META.length) {
+    window.INSEE_META = [
+      { id:'insee_pop', label:'Population totale', unit:'hab.', fmt:'int', aude:375100, annee:'2022',
+        source:'INSEE — valeur connue', desc:"Population totale de l'Aude.",
+        occ:null, fra:null, rank_fr:null, rank_strate:null, rank_occ:null,
+        total_fr:96, total_strate:11, total_occ:13, stats_fr:{}, stats_strate:{}, stats_occ:{}, has_ts:false, isNew:false },
+      { id:'insee_tx_chomage', label:'Taux de chômage', unit:'%', fmt:'pct1', aude:9.6, annee:'2024 T4',
+        source:'INSEE — valeur connue', desc:"Taux de chômage localisé de l'Aude.",
+        occ:null, fra:null, rank_fr:null, rank_strate:null, rank_occ:null,
+        total_fr:96, total_strate:11, total_occ:13, stats_fr:{}, stats_strate:{}, stats_occ:{}, has_ts:false, isNew:false }
+    ];
+  }
+}
+
+async function loadDREES() {
+  addLog('ℹ️', 'DREES chargée.');
+}
+
+window.onload = function() {
+  rebuildAllMeta();
+  buildDash();
+};
+</script>
 </body>
 </html>
