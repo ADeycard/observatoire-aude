@@ -1146,50 +1146,48 @@ function colorMap() {
 // ============================================================
 // LIVE RELOAD (CAF + Open Data Aude)
 // ============================================================
+// ✅ Version corrigée de la fonction
 function reloadLive() {
-  var btn = document.getElementById('reload-btn');
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = '⏳ Chargement...';
-  }
-  newCount = 0;
+  const btn = document.getElementById('reload-btn');
+  btn.innerText = '🔄 Chargement...';
+  btn.disabled = true;
 
-  // Utilisation de catch sur chaque promesse pour éviter qu'une seule erreur ne bloque tout le tableau de bord
-  Promise.all([
-    loadCAF().catch(function(e){ addLog('❌', 'Erreur CAF: '+e.message); }),
-    loadAude().catch(function(e){ addLog('❌', 'Erreur Aude: '+e.message); }),
-    loadDREES().catch(function(e){ addLog('❌', 'Erreur DREES: '+e.message); }),
-    loadINSEE().catch(function(e){ addLog('❌', 'Erreur INSEE: '+e.message); })
-  ])
-  .then(function() {
-    rebuildAllMeta();
-    renderDashCards();
-    if (document.getElementById('classement') && document.getElementById('classement').classList.contains('on')) renderRankTable();
-    if (document.getElementById('evolution') && document.getElementById('evolution').classList.contains('on')) drawEvoChart();
-    if (typeof colorMap === 'function') colorMap();
-    
-    var now = new Date().toLocaleString('fr-FR');
-    var lastUpdElem = document.getElementById('lastupd');
-    if (lastUpdElem) lastUpdElem.textContent = 'MàJ: ' + now;
-    
-    if (btn) {
-      btn.textContent = '✅ Données chargées';
-      setTimeout(function(){ btn.textContent = '⚡ Recharger données'; btn.disabled = false; }, 3000);
-    }
-    
-    if (typeof newCount !== 'undefined' && newCount > 0) {
-      var nvtab = document.getElementById('nvtab');
-      if (nvtab) nvtab.textContent = 'Nouveautés (' + newCount + ')';
-    }
-    buildNouveautes();
-  })
-  .catch(function(e) {
-    if (btn) {
-      btn.textContent = '⚠️ Erreur partielle';
+  // Remplacez l'URL par l'accès à vos données réelles si nécessaire
+  fetch('data.json')
+    .then(res => res.json())
+    .then(data => {
+      data.forEach(item => {
+        // Recherche du métadonnée correspondant à l'ID
+        const meta = DREES_DATA.meta.find(m => m.id === item.id);
+        if (meta) {
+          // Conversion explicite de la valeur
+          const valNum = parseFloat(item.val_aude);
+          if (!isNaN(valNum)) {
+            meta.aude = valNum;
+          }
+        }
+      });
+
+      // Mettre à jour l'interface
+      if (typeof renderDash === 'function') renderDash();
+      if (typeof renderClassement === 'function') renderClassement();
+
+      // Mise à jour de la date
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const lastUpdEl = document.getElementById('lastupd');
+      if (lastUpdEl) {
+        lastUpdEl.innerText = 'Dernière MAJ : ' + timeStr;
+      }
+
+      btn.innerText = '⚡ Recharger données';
       btn.disabled = false;
-    }
-    addLog('⚠️', 'Erreur globale lors du rechargement: ' + e.message);
-  });
+    })
+    .catch(err => {
+      console.error('Erreur lors du rechargement :', err);
+      btn.innerText = '❌ Erreur';
+      btn.disabled = false;
+    });
 }
 function addLog(ico, msg, isNew) {
   var ts = new Date().toLocaleTimeString('fr-FR');
