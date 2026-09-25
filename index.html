@@ -1148,33 +1148,49 @@ function colorMap() {
 // ============================================================
 function reloadLive() {
   var btn = document.getElementById('reload-btn');
-  btn.disabled = true;
-  btn.textContent = '⏳ Chargement...';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = '⏳ Chargement...';
+  }
   newCount = 0;
-  
-  Promise.all([loadCAF(), loadAude(), loadDREES(), loadINSEE()])
-    .then(function() {
-      rebuildAllMeta();
-      renderDashCards();
-      if (document.getElementById('classement').classList.contains('on')) renderRankTable();
-      if (document.getElementById('evolution').classList.contains('on')) drawEvoChart();
-      colorMap();
-      var now = new Date().toLocaleString('fr-FR');
-      document.getElementById('lastupd').textContent = 'MàJ: '+now;
+
+  // Utilisation de catch sur chaque promesse pour éviter qu'une seule erreur ne bloque tout le tableau de bord
+  Promise.all([
+    loadCAF().catch(function(e){ addLog('❌', 'Erreur CAF: '+e.message); }),
+    loadAude().catch(function(e){ addLog('❌', 'Erreur Aude: '+e.message); }),
+    loadDREES().catch(function(e){ addLog('❌', 'Erreur DREES: '+e.message); }),
+    loadINSEE().catch(function(e){ addLog('❌', 'Erreur INSEE: '+e.message); })
+  ])
+  .then(function() {
+    rebuildAllMeta();
+    renderDashCards();
+    if (document.getElementById('classement') && document.getElementById('classement').classList.contains('on')) renderRankTable();
+    if (document.getElementById('evolution') && document.getElementById('evolution').classList.contains('on')) drawEvoChart();
+    if (typeof colorMap === 'function') colorMap();
+    
+    var now = new Date().toLocaleString('fr-FR');
+    var lastUpdElem = document.getElementById('lastupd');
+    if (lastUpdElem) lastUpdElem.textContent = 'MàJ: ' + now;
+    
+    if (btn) {
       btn.textContent = '✅ Données chargées';
-      setTimeout(function(){ btn.textContent='⚡ Recharger données'; btn.disabled=false; }, 3000);
-      if (newCount > 0) {
-        document.getElementById('nvtab').textContent = 'Nouveautés (' + newCount + ')';
-      }
-      buildNouveautes();
-    })
-    .catch(function(e) {
+      setTimeout(function(){ btn.textContent = '⚡ Recharger données'; btn.disabled = false; }, 3000);
+    }
+    
+    if (typeof newCount !== 'undefined' && newCount > 0) {
+      var nvtab = document.getElementById('nvtab');
+      if (nvtab) nvtab.textContent = 'Nouveautés (' + newCount + ')';
+    }
+    buildNouveautes();
+  })
+  .catch(function(e) {
+    if (btn) {
       btn.textContent = '⚠️ Erreur partielle';
       btn.disabled = false;
-      addLog('⚠️', 'Erreur lors du rechargement: '+e.message);
-    });
+    }
+    addLog('⚠️', 'Erreur globale lors du rechargement: ' + e.message);
+  });
 }
-
 function addLog(ico, msg, isNew) {
   var ts = new Date().toLocaleTimeString('fr-FR');
   refreshLog.unshift({ts:ts, ico:ico, msg:msg, isNew:!!isNew});
