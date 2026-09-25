@@ -1625,7 +1625,9 @@ async function queryDreesRecords(dsKey, deptField, deptCode, yearField, limit) {
   var id = DREES_RESOLVED_ID[dsKey] || DREES_DATASETS[dsKey][0];
   var base = DREES_BASE + id + '/records';
   var order = yearField ? '&order_by=' + encodeURIComponent(yearField + ' desc') : '';
-  var lim = limit || 300;
+  // L'API Opendatasoft v2.1 refuse limit > 100 (HTTP 400) : avec 300 les deux
+  // tentatives échouaient silencieusement (r.ok=false) et la fonction retournait [].
+  var lim = Math.min(limit || 100, 100);
   var attempts = [
     base + '?where=' + encodeURIComponent(deptField + '="' + deptCode + '"') + order + '&limit=' + lim,
     base + '?where=' + encodeURIComponent(deptField + '=' + deptCode) + order + '&limit=' + lim
@@ -1697,7 +1699,7 @@ async function loadDREES() {
         // Format « long » (ex: financiers, enfance) : une colonne « value » générique,
         // le nom de l'indicateur est dans le contenu (libelle_indicateur). Il faut donc
         // toutes les lignes du département, pas un seul enregistrement.
-        var recs = await queryDreesRecords(dsKey, deptField, '11', yearField, 300);
+        var recs = await queryDreesRecords(dsKey, deptField, '11', yearField, 100);
         if (!recs.length) { addLog('⚠️', 'DREES (' + dsKey + ') : aucun enregistrement pour l\'Aude (champ « ' + deptField + ' »). Vérifiez que ce champ contient bien un CODE et non un libellé.'); continue; }
         recordByDs[dsKey] = recs;
         addLog('ℹ️', 'DREES (' + dsKey + ') : format long détecté (colonnes « ' + longFmt.labelField + ' » / « ' + longFmt.valueField + ' »), ' + recs.length + ' lignes pour code_dep="11".');
@@ -1756,6 +1758,23 @@ async function loadDREES() {
     DREES_SNAP[rule.id] = { '11': aude };
     updated++;
     addLog('✅', rule.id + ' (' + entry.label + ') : ' + aude + ' ' + (entry.unit || '') + ' — ' + sourceLabel + ', année ' + annee, isNew);
+  });
+
+  // Un indicateur dont le jeu source DREES est totalement vide/injoignable ne doit
+  // pas simplement disparaître de l'appli sans explication : on l'affiche quand même,
+  // avec une valeur nulle et une mention explicite, plutôt qu'un item invisible.
+  DREES_RULES.forEach(function(rule) {
+    var alreadyPresent = DREES_META.find(function(m) { return m.id === rule.id; });
+    if (alreadyPresent) return;
+    var placeholder = {
+      id: rule.id, label: rule.label, unit: rule.unit, fmt: rule.fmt, themes: rule.themes,
+      occ:null, fra:null, rank_fr:null, rank_strate:null, rank_occ:null,
+      total_fr:96, total_strate:11, total_occ:13, stats_fr:{}, stats_strate:{}, stats_occ:{}, has_ts:false,
+      desc: rule.desc, aude: null, annee: null,
+      source: 'DREES — indisponible (jeu de données ' + rule.ds + ' actuellement vide ou injoignable côté DREES)',
+      isNew: false
+    };
+    DREES_META.push(placeholder);
   });
 
   addLog(updated ? '✅' : '⚠️', 'DREES : ' + updated + '/' + DREES_RULES.length + ' indicateurs mis à jour en direct.');
