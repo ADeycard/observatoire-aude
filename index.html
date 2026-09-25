@@ -1155,6 +1155,114 @@ function addLog(ico, msg, isNew) {
   if (refreshLog.length > 100) refreshLog.pop();
 }
 
+// ============================================================
+// NOUVEAUTES — journal des sources + statut rapide par API
+// ============================================================
+function buildNouveautes() {
+  var el = document.getElementById('nouveautes');
+  if (!el) return;
+
+  var sources = [
+    { label: 'CAF',            match: /^CAF/ },
+    { label: 'Open Data Aude', match: /Établissements|Maisons De la Solidarité/ },
+    { label: 'DREES',          match: /^DREES|^ind\d/ },
+    { label: 'INSEE',          match: /^INSEE/ }
+  ];
+  var statusHtml = sources.map(function(src) {
+    var entry = refreshLog.find(function(e){ return src.match.test(e.msg); });
+    var icon  = entry ? entry.ico : '⏳';
+    var state = entry ? entry.msg : 'Pas encore interrogé';
+    var cls   = !entry ? 'api-pend' : (entry.ico === '❌' ? 'api-err' : (entry.ico === '⚠️' ? 'api-pend' : 'api-ok'));
+    return '<div class="api-status-card"><div class="api-status-icon">'+icon+'</div><div><div class="api-status-name">'+src.label+'</div>'+
+      '<div class="api-status-state '+cls+'">'+state+'</div></div></div>';
+  }).join('');
+
+  var logHtml = refreshLog.map(function(e) {
+    return '<div class="log-entry'+(e.isNew?' log-new':'')+'">'+
+      '<span class="log-ts">'+e.ts+'</span><span class="log-ico">'+e.ico+'</span>'+
+      '<span class="log-msg">'+e.msg+(e.isNew?' <b style="color:#1a8a40">NOUVEAU</b>':'')+'</span></div>';
+  }).join('');
+
+  el.innerHTML =
+    '<h2 style="color:#1a4a6e;margin-bottom:14px">🔔 Nouveautés &amp; journal des sources</h2>'+
+    '<div class="api-status-grid">'+statusHtml+'</div>'+
+    '<div class="refresh-log">'+(refreshLog.length ? logHtml :
+      '<div style="color:#88a;padding:20px;text-align:center">Aucun rechargement effectué. Cliquez sur « ⚡ Recharger données ».</div>')+'</div>';
+
+  newCount = 0;
+}
+
+// ============================================================
+// EXPORT PDF — sélection de thèmes + aperçu imprimable (impression navigateur → « Enregistrer en PDF »)
+// ============================================================
+var exportSelectedThemes = ['all'];
+
+function toggleExportTheme(id) {
+  if (id === 'all') { exportSelectedThemes = ['all']; }
+  else {
+    exportSelectedThemes = exportSelectedThemes.filter(function(t){return t!=='all';});
+    var i = exportSelectedThemes.indexOf(id);
+    if (i >= 0) exportSelectedThemes.splice(i,1); else exportSelectedThemes.push(id);
+    if (!exportSelectedThemes.length) exportSelectedThemes = ['all'];
+  }
+  buildExport();
+}
+
+function buildExport() {
+  var el = document.getElementById('export');
+  if (!el) return;
+
+  var themeBtns = THEMES.map(function(t) {
+    var on = exportSelectedThemes.indexOf(t.id) >= 0;
+    return '<button class="exp-theme-btn'+(on?' on':'')+'" onclick="toggleExportTheme(\''+t.id+'\')">'+t.lbl+'</button>';
+  }).join(' ');
+
+  el.innerHTML =
+    '<h2 style="color:#1a4a6e;margin-bottom:14px">📄 Export PDF</h2>'+
+    '<div class="exp-options"><h4>Thèmes à inclure</h4><div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">'+themeBtns+'</div>'+
+    '<div class="exp-opt-row"><input type="checkbox" id="exp-opt-desc" checked> <label for="exp-opt-desc">Inclure les définitions des indicateurs</label></div>'+
+    '<div class="exp-opt-row"><input type="checkbox" id="exp-opt-src" checked> <label for="exp-opt-src">Inclure la source et l\'année de référence</label></div>'+
+    '<button class="gen-pdf-btn" onclick="generatePdf()">Générer l\'aperçu</button></div>'+
+    '<div id="pdf-preview-wrap"><div id="pdf-preview-header"><span>Aperçu — Observatoire Social de l\'Aude</span>'+
+    '<span><button onclick="window.print()" style="background:#ED7D31;border:none;color:#fff;cursor:pointer;font-size:11px;padding:5px 10px;border-radius:4px;margin-right:8px">🖨️ Imprimer / Enregistrer en PDF</button>'+
+    '<button onclick="document.getElementById(\'pdf-preview-wrap\').classList.remove(\'on\')" style="background:none;border:none;color:#fff;cursor:pointer;font-size:16px">✕</button></span></div>'+
+    '<div id="pdf-preview-body"></div></div>';
+}
+
+function generatePdf() {
+  if (typeof ALL_META === 'undefined' || !ALL_META.length) { alert('Aucune donnée à exporter pour le moment. Cliquez sur « Recharger données » depuis le tableau de bord.'); return; }
+  var includeDesc = document.getElementById('exp-opt-desc').checked;
+  var includeSrc  = document.getElementById('exp-opt-src').checked;
+  var wantAll = exportSelectedThemes.indexOf('all') >= 0;
+
+  var byTheme = {};
+  ALL_META.forEach(function(m) {
+    var themes = m.themes || ['all'];
+    if (!wantAll && !themes.some(function(t){return exportSelectedThemes.indexOf(t)>=0;})) return;
+    var key = themes[0] || 'autre';
+    if (!byTheme[key]) byTheme[key] = [];
+    byTheme[key].push(m);
+  });
+
+  var html = '<h2 style="color:#1a4a6e">Observatoire Social — Département de l\'Aude</h2>'+
+    '<p style="color:#88a;font-size:11px">Généré le '+new Date().toLocaleString('fr-FR')+'</p>';
+
+  Object.keys(byTheme).forEach(function(key) {
+    var th = THEMES.find(function(t){return t.id===key;});
+    html += '<h3 style="color:#3a7abf;border-bottom:1px solid #d0e2f0;padding-bottom:4px;margin-top:18px">'+(th?th.lbl:key)+'</h3>';
+    byTheme[key].forEach(function(m) {
+      html += '<div style="margin-bottom:10px"><b>'+m.label+'</b> : '+fmt(m.aude, m.fmt, m.unit)+
+        (m.annee ? ' <span style="color:#88a">('+m.annee+')</span>' : '')+
+        (includeDesc && m.desc ? '<div style="color:#556;font-size:11px">'+m.desc+'</div>' : '')+
+        (includeSrc && m.source ? '<div style="color:#9ab;font-size:10px">Source : '+m.source+'</div>' : '')+
+        '</div>';
+    });
+  });
+
+  document.getElementById('pdf-preview-body').innerHTML = html;
+  document.getElementById('pdf-preview-wrap').classList.add('on');
+}
+
 async function loadCAF() {
   try {
     addLog('⏳', 'Chargement CAF...');
