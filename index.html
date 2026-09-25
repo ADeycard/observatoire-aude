@@ -1582,6 +1582,23 @@ function bestDreesField(fields, keywords, exclude) {
   }).filter(function(x) { return x.score > 0; }).sort(function(a, b) { return b.score - a.score; });
   return scored[0] ? scored[0].field : null;
 }
+// Certains jeux DREES (financiers, enfance...) sont au format « long » :
+// une ligne = un indicateur, avec une colonne générique « value » et le nom
+// de l'indicateur dans « libelle_indicateur » (+ thematique/sous_thematique).
+// Dans ce cas il n'existe aucune colonne dont le NOM contient les mots-clés
+// (ex: "rsa", "habitant") : bestDreesField() ne peut donc jamais matcher.
+// Il faut chercher les mots-clés dans le CONTENU des lignes, pas les colonnes.
+function findDreesFieldByNames(fields, names) {
+  var byName = fields.find(function(f) { return names.indexOf(normFr(f.name)) >= 0; });
+  return byName ? byName.name : null;
+}
+function findDreesLongFormatFields(fields) {
+  var valueField = findDreesFieldByNames(fields, ['value', 'valeur']);
+  var labelField = findDreesFieldByNames(fields, ['libelle_indicateur', 'libelle', 'indicateur']);
+  var themeField = findDreesFieldByNames(fields, ['thematique']);
+  var subThemeField = findDreesFieldByNames(fields, ['sous_thematique']);
+  return (valueField && labelField) ? { valueField: valueField, labelField: labelField, themeField: themeField, subThemeField: subThemeField } : null;
+}
 async function queryDreesRecord(dsKey, deptField, deptCode, yearField) {
   var id = DREES_RESOLVED_ID[dsKey] || DREES_DATASETS[dsKey][0];
   var base = DREES_BASE + id + '/records';
@@ -1599,6 +1616,46 @@ async function queryDreesRecord(dsKey, deptField, deptCode, yearField) {
     } catch (e) { /* essai suivant */ }
   }
   return null;
+}
+// Variante « toutes les lignes du département » pour les jeux au format long :
+// on a besoin de l'ensemble des indicateurs (pas d'un seul enregistrement)
+// pour pouvoir ensuite choisir, pour chaque règle, la ligne dont le libellé
+// correspond le mieux aux mots-clés.
+async function queryDreesRecords(dsKey, deptField, deptCode, yearField, limit) {
+  var id = DREES_RESOLVED_ID[dsKey] || DREES_DATASETS[dsKey][0];
+  var base = DREES_BASE + id + '/records';
+  var order = yearField ? '&order_by=' + encodeURIComponent(yearField + ' desc') : '';
+  var lim = limit || 300;
+  var attempts = [
+    base + '?where=' + encodeURIComponent(deptField + '="' + deptCode + '"') + order + '&limit=' + lim,
+    base + '?where=' + encodeURIComponent(deptField + '=' + deptCode) + order + '&limit=' + lim
+  ];
+  for (var i = 0; i < attempts.length; i++) {
+    try {
+      var r = await fetch(attempts[i]);
+      if (!r.ok) continue;
+      var data = await r.json();
+      if (data.results && data.results.length) return data.results;
+    } catch (e) { /* essai suivant */ }
+  }
+  return [];
+}
+// Équivalent de bestDreesField() mais appliqué au CONTENU des lignes
+// (libelle_indicateur + thematique + sous_thematique) plutôt qu'aux noms
+// de colonnes. À score égal, on préfère la ligne la plus récente.
+function bestDreesRecord(records, longFmt, keywords, exclude, yearField) {
+  var scored = records.map(function(r) {
+    var text = normFr([r[longFmt.labelField], r[longFmt.themeField], r[longFmt.subThemeField]].filter(Boolean).join(' '));
+    var score = keywords.reduce(function(s, k) { return s + (text.indexOf(k) >= 0 ? 1 : 0); }, 0);
+    if (exclude && exclude.some(function(x) { return text.indexOf(x) >= 0; })) score = -99;
+    return { rec: r, score: score };
+  }).filter(function(x) { return x.score > 0; }).sort(function(a, b) {
+    if (b.score !== a.score) return b.score - a.score;
+    var ay = yearField ? (parseFloat(a.rec[yearField]) || 0) : 0;
+    var by = yearField ? (parseFloat(b.rec[yearField]) || 0) : 0;
+    return by - ay;
+  });
+  return scored[0] ? scored[0].rec : null;
 }
 
 // Règles indicateur ⇄ mots-clés de libellé DREES, avec la définition (métadonnée, pas une valeur)
@@ -1632,12 +1689,24 @@ async function loadDREES() {
       var deptField = findDreesDim(fields, 'dept', dsKey);
       var yearField = findDreesDim(fields, 'annee', dsKey);
       if (!deptField) { addLog('⚠️', 'DREES (' + dsKey + ') : champ département introuvable.'); continue; }
-      dimByDs[dsKey] = { deptField: deptField, yearField: yearField };
+      var longFmt = findDreesLongFormatFields(fields);
+      dimByDs[dsKey] = { deptField: deptField, yearField: yearField, longFmt: longFmt };
       fieldsByDs[dsKey] = fields;
-      var rec = await queryDreesRecord(dsKey, deptField, '11', yearField);
-      if (!rec) { addLog('⚠️', 'DREES (' + dsKey + ') : aucun enregistrement pour l\'Aude (champ « ' + deptField + ' »). Vérifiez que ce champ contient bien un CODE et non un libellé.'); continue; }
-      recordByDs[dsKey] = rec;
-      addLog('ℹ️', 'DREES (' + dsKey + ') : trouvé via ' + deptField + '="' + rec[deptField] + '"' + (yearField ? ', ' + yearField + '=' + rec[yearField] : ''));
+
+      if (longFmt) {
+        // Format « long » (ex: financiers, enfance) : une colonne « value » générique,
+        // le nom de l'indicateur est dans le contenu (libelle_indicateur). Il faut donc
+        // toutes les lignes du département, pas un seul enregistrement.
+        var recs = await queryDreesRecords(dsKey, deptField, '11', yearField, 300);
+        if (!recs.length) { addLog('⚠️', 'DREES (' + dsKey + ') : aucun enregistrement pour l\'Aude (champ « ' + deptField + ' »). Vérifiez que ce champ contient bien un CODE et non un libellé.'); continue; }
+        recordByDs[dsKey] = recs;
+        addLog('ℹ️', 'DREES (' + dsKey + ') : format long détecté (colonnes « ' + longFmt.labelField + ' » / « ' + longFmt.valueField + ' »), ' + recs.length + ' lignes pour code_dep="11".');
+      } else {
+        var rec = await queryDreesRecord(dsKey, deptField, '11', yearField);
+        if (!rec) { addLog('⚠️', 'DREES (' + dsKey + ') : aucun enregistrement pour l\'Aude (champ « ' + deptField + ' »). Vérifiez que ce champ contient bien un CODE et non un libellé.'); continue; }
+        recordByDs[dsKey] = rec;
+        addLog('ℹ️', 'DREES (' + dsKey + ') : trouvé via ' + deptField + '="' + rec[deptField] + '"' + (yearField ? ', ' + yearField + '=' + rec[yearField] : ''));
+      }
     } catch (e) {
       addLog('❌', 'DREES (' + dsKey + ') : erreur de connexion — ' + e.message);
     }
@@ -1648,16 +1717,30 @@ async function loadDREES() {
   var updated = 0;
 
   DREES_RULES.forEach(function(rule) {
-    var fields = fieldsByDs[rule.ds], rec = recordByDs[rule.ds], dim = dimByDs[rule.ds];
-    if (!fields || !rec) return;
-    var match = bestDreesField(fields, rule.kw, rule.ex);
-    if (!match) { addLog('⚠️', rule.id + ' : aucun champ DREES ne correspond aux mots-clés (' + rule.kw.join(', ') + ').'); return; }
-    var val = rec[match.name];
-    if (val === null || val === undefined || val === '') { addLog('⚠️', rule.id + ' : champ « ' + (match.label || match.name) + ' » trouvé mais vide.'); return; }
-    var aude = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
-    var annee = dim.yearField ? rec[dim.yearField] : null;
-    var isNew = prevIds.indexOf(rule.id) < 0;
+    var fields = fieldsByDs[rule.ds], data = recordByDs[rule.ds], dim = dimByDs[rule.ds];
+    if (!fields || !data) return;
 
+    var aude, annee, sourceLabel;
+
+    if (dim.longFmt) {
+      var recMatch = bestDreesRecord(data, dim.longFmt, rule.kw, rule.ex, dim.yearField);
+      if (!recMatch) { addLog('⚠️', rule.id + ' : aucune ligne DREES ne correspond aux mots-clés (' + rule.kw.join(', ') + ') dans « ' + dim.longFmt.labelField + ' ».'); return; }
+      var val = recMatch[dim.longFmt.valueField];
+      if (val === null || val === undefined || val === '') { addLog('⚠️', rule.id + ' : ligne « ' + recMatch[dim.longFmt.labelField] + ' » trouvée mais valeur vide.'); return; }
+      aude = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
+      annee = dim.yearField ? recMatch[dim.yearField] : null;
+      sourceLabel = 'DREES — data.drees (direct, indicateur: ' + recMatch[dim.longFmt.labelField] + ')';
+    } else {
+      var match = bestDreesField(fields, rule.kw, rule.ex);
+      if (!match) { addLog('⚠️', rule.id + ' : aucun champ DREES ne correspond aux mots-clés (' + rule.kw.join(', ') + ').'); return; }
+      var val2 = data[match.name];
+      if (val2 === null || val2 === undefined || val2 === '') { addLog('⚠️', rule.id + ' : champ « ' + (match.label || match.name) + ' » trouvé mais vide.'); return; }
+      aude = typeof val2 === 'string' ? parseFloat(val2.replace(',', '.')) : val2;
+      annee = dim.yearField ? data[dim.yearField] : null;
+      sourceLabel = 'DREES — data.drees (direct, champ: ' + (match.label || match.name) + ')';
+    }
+
+    var isNew = prevIds.indexOf(rule.id) < 0;
     var existing = DREES_META.find(function(m) { return m.id === rule.id; });
     var entry = existing || {
       id: rule.id, label: rule.label, unit: rule.unit, fmt: rule.fmt, themes: rule.themes,
@@ -1667,12 +1750,12 @@ async function loadDREES() {
     };
     entry.aude = aude;
     entry.annee = annee;
-    entry.source = 'DREES — data.drees (direct, champ: ' + (match.label || match.name) + ')';
+    entry.source = sourceLabel;
     entry.isNew = isNew;
     if (!existing) DREES_META.push(entry);
     DREES_SNAP[rule.id] = { '11': aude };
     updated++;
-    addLog('✅', rule.id + ' (' + entry.label + ') : ' + aude + ' ' + (entry.unit || '') + ' — champ « ' + (match.label || match.name) + ' », année ' + annee, isNew);
+    addLog('✅', rule.id + ' (' + entry.label + ') : ' + aude + ' ' + (entry.unit || '') + ' — ' + sourceLabel + ', année ' + annee, isNew);
   });
 
   addLog(updated ? '✅' : '⚠️', 'DREES : ' + updated + '/' + DREES_RULES.length + ' indicateurs mis à jour en direct.');
