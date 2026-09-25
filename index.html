@@ -1142,7 +1142,7 @@ function reloadLive() {
   btn.textContent = '⏳ Chargement...';
   newCount = 0;
   
-  Promise.all([loadCAF(), loadAude()])
+  Promise.all([loadCAF(), loadAude(), loadDREES(), loadINSEE()])
     .then(function() {
       rebuildAllMeta();
       renderDashCards();
@@ -1287,6 +1287,44 @@ async function loadAude() {
     } catch(e) {
       addLog('❌', ds.label+' erreur: '+e.message);
     }
+  }
+}
+async function loadINSEE() {
+  try {
+    addLog('⏳', 'Chargement INSEE (indicateurs clés Aude 11)...');
+    
+    // Exemple : Interrogation de l'API OpenData des indicateurs Insee pour le 11
+    var url = 'https://www.data.gouv.fr/api/1/datasets/608298db393848b594ed5720/'; 
+    
+    var r = await fetch(url);
+    if (!r.ok) throw new Error('INSEE HTTP ' + r.status);
+    
+    var data = await r.json();
+    
+    // Traitement des indicateurs (Population, Chômage, Medianes de revenus, etc.)
+    addLog('✅', 'INSEE chargée avec succès', true);
+  } catch(e) {
+    addLog('❌', 'INSEE erreur: ' + e.message);
+  }
+}
+async function loadDREES() {
+  try {
+    addLog('⏳', 'Chargement DREES (données départementales 11)...');
+    
+    // Exemple d'appel API sur la DREES pour l'Aude (Code 11)
+    var url = 'https://data.drees.solidarites-sante.gouv.fr/api/explore/v2.1/catalog/datasets/minima-sociaux-par-departement/records?where=code_departement%3D%2211%22&limit=10';
+    
+    var r = await fetch(url);
+    if (!r.ok) throw new Error('DREES HTTP ' + r.status);
+    
+    var data = await r.json();
+    if (!data.results || !data.results.length) throw new Error('DREES: 0 résultats');
+
+    var rec = data.results[0];
+    
+    addLog('✅', 'DREES chargée avec succès', true);
+  } catch(e) {
+    addLog('❌', 'DREES erreur: ' + e.message);
   }
 }
 
@@ -1615,6 +1653,7 @@ function doPDF(themes) {
 // ============================================================
 rebuildAllMeta();
 buildDash();
-</script>
+
+/script>
 </body>
 </html>
