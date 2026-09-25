@@ -1425,10 +1425,21 @@ async function loadAude() {
   for (var i=0; i<datasets.length; i++) {
     var ds = datasets[i];
     try {
-      var r = await fetch('https://opendata.aude.fr/api/explore/v2.1/catalog/datasets/'+ds.url+'/records?limit=1');
-      if (!r.ok) throw new Error('HTTP '+r.status);
-      var data = await r.json();
-      var count = data.total_count || 0;
+      var count = null;
+      var url = 'https://opendata.aude.fr/api/explore/v2.1/catalog/datasets/'+ds.url+'/records?limit=1';
+      var r = await fetch(url);
+      if (r.ok) {
+        var data = await r.json();
+        count = data.total_count || 0;
+      } else {
+        // Filet de secours : ancienne API Opendatasoft v1, au cas où le jeu de données
+        // n'existe plus / a changé d'identifiant côté v2.1
+        var url1 = 'https://opendata.aude.fr/api/records/1.0/search/?dataset='+ds.url+'&rows=1';
+        var r1 = await fetch(url1);
+        if (!r1.ok) throw new Error('v2.1 HTTP '+r.status+' / v1 HTTP '+r1.status+' — le dataset « '+ds.url+' » n\'existe peut-être plus sous cet identifiant sur opendata.aude.fr');
+        var data1 = await r1.json();
+        count = data1.nhits || 0;
+      }
       
       // Check if already in AUDE_META
       var existing = AUDE_META.find(function(m){return m.id==='aude_'+ds.url;});
@@ -1498,11 +1509,12 @@ async function loadINSEE() {
 // ============================================================
 var DREES_BASE = 'https://data.drees.solidarites-sante.gouv.fr/api/explore/v2.1/catalog/datasets/';
 var DREES_DATASETS = {
-  depenses:   '376_les-depenses-d-aide-sociale-departementale',
-  financiers: '619_indicateurs-financiers',
-  enfance:    '596_enfance-et-jeunesse-en-danger'
+  depenses:   ['376_les-depenses-d-aide-sociale-departementale', 'bases-de-donnees-brutes-de-l-enquete-aide-sociale-volet-depenses'],
+  financiers: ['619_indicateurs-financiers'],
+  enfance:    ['596_enfance-et-jeunesse-en-danger']
 };
 var DREES_FIELD_CACHE = {};
+var DREES_RESOLVED_ID = {}; // quel id de la liste a fini par marcher, pour les requêtes suivantes
 
 function normFr(s) {
   return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
@@ -1515,22 +1527,51 @@ function extractDreesFields(data) {
 }
 async function getDreesFields(dsKey) {
   if (DREES_FIELD_CACHE[dsKey]) return DREES_FIELD_CACHE[dsKey];
-  var r = await fetch(DREES_BASE + DREES_DATASETS[dsKey]);
-  if (!r.ok) throw new Error('catalogue DREES HTTP ' + r.status);
-  var fields = extractDreesFields(await r.json());
-  DREES_FIELD_CACHE[dsKey] = fields;
-  return fields;
-}
-function findDreesDim(fields, mustHave, prefer) {
-  var cands = fields.filter(function(f) {
-    var lbl = normFr(f.label || f.name);
-    return mustHave.every(function(k) { return lbl.indexOf(k) >= 0; });
-  });
-  if (prefer && cands.length > 1) {
-    var preferred = cands.filter(function(f) { return normFr(f.label || f.name).indexOf(prefer) >= 0; });
-    if (preferred.length) cands = preferred;
+  var ids = DREES_DATASETS[dsKey];
+  var lastErr = null;
+  for (var i = 0; i < ids.length; i++) {
+    try {
+      var r = await fetch(DREES_BASE + ids[i]);
+      if (!r.ok) { lastErr = 'HTTP ' + r.status + ' (' + ids[i] + ')'; continue; }
+      var raw = await r.json();
+      var fields = extractDreesFields(raw);
+      if (!fields.length) {
+        addLog('⚠️', 'DREES (' + dsKey + '/' + ids[i] + ') : schéma sans champ exploitable. Clés reçues: ' + Object.keys(raw).join(', ') + '.');
+        continue;
+      }
+      addLog('ℹ️', 'DREES (' + dsKey + ') : ' + fields.length + ' champs via « ' + ids[i] + ' » → ' + fields.map(function(f){return f.name;}).join(', '));
+      DREES_RESOLVED_ID[dsKey] = ids[i];
+      DREES_FIELD_CACHE[dsKey] = fields;
+      return fields;
+    } catch (e) { lastErr = e.message + ' (' + ids[i] + ')'; }
   }
-  return cands[0] ? cands[0].name : null;
+  if (lastErr) addLog('❌', 'DREES (' + dsKey + ') : aucun identifiant valide — ' + lastErr);
+  DREES_FIELD_CACHE[dsKey] = [];
+  return [];
+}
+// Une fois les vrais noms de champs connus (via les logs ci-dessus), on peut les fixer ici
+// pour éviter toute nouvelle détection automatique hasardeuse sur ce jeu de données.
+var DREES_DIM_OVERRIDES = {
+  // enfance: { dept: 'dep', annee: 'annee' },
+};
+function findDreesDim(fields, kind, dsKey) {
+  if (DREES_DIM_OVERRIDES[dsKey] && DREES_DIM_OVERRIDES[dsKey][kind]) return DREES_DIM_OVERRIDES[dsKey][kind];
+  if (kind === 'dept') {
+    var exact = ['dep','departement','code_dep','code_departement','num_dep','codegeo','code_geo','dept','coddep'];
+    var byName = fields.find(function(f) { return exact.indexOf(normFr(f.name)) >= 0; });
+    if (byName) return byName.name;
+    var cands = fields.filter(function(f) {
+      var nm = normFr(f.name), lbl = normFr(f.label || '');
+      var looksCode = nm.indexOf('dep') >= 0 || lbl.indexOf('departement') >= 0;
+      var looksLabel = nm.indexOf('lib') >= 0 || lbl.indexOf('libelle') >= 0 || lbl.indexOf('nom') >= 0;
+      return looksCode && !looksLabel;
+    });
+    return cands[0] ? cands[0].name : null;
+  }
+  var byName2 = fields.find(function(f) { return normFr(f.name) === 'annee'; });
+  if (byName2) return byName2.name;
+  var cands2 = fields.filter(function(f) { return normFr(f.label || f.name).indexOf('annee') >= 0; });
+  return cands2[0] ? cands2[0].name : null;
 }
 function bestDreesField(fields, keywords, exclude) {
   var scored = fields.map(function(f) {
@@ -1542,7 +1583,8 @@ function bestDreesField(fields, keywords, exclude) {
   return scored[0] ? scored[0].field : null;
 }
 async function queryDreesRecord(dsKey, deptField, deptCode, yearField) {
-  var base = DREES_BASE + DREES_DATASETS[dsKey] + '/records';
+  var id = DREES_RESOLVED_ID[dsKey] || DREES_DATASETS[dsKey][0];
+  var base = DREES_BASE + id + '/records';
   var order = yearField ? '&order_by=' + encodeURIComponent(yearField + ' desc') : '';
   var attempts = [
     base + '?where=' + encodeURIComponent(deptField + '="' + deptCode + '"') + order + '&limit=1',
@@ -1586,15 +1628,16 @@ async function loadDREES() {
   for (var dsKey in dsUsed) {
     try {
       var fields = await getDreesFields(dsKey);
-      if (!fields.length) { addLog('⚠️', 'DREES (' + dsKey + ') : impossible de lire le schéma des champs.'); continue; }
-      var deptField = findDreesDim(fields, ['departement'], 'code');
-      var yearField = findDreesDim(fields, ['annee']);
+      if (!fields.length) { continue; }
+      var deptField = findDreesDim(fields, 'dept', dsKey);
+      var yearField = findDreesDim(fields, 'annee', dsKey);
       if (!deptField) { addLog('⚠️', 'DREES (' + dsKey + ') : champ département introuvable.'); continue; }
       dimByDs[dsKey] = { deptField: deptField, yearField: yearField };
       fieldsByDs[dsKey] = fields;
       var rec = await queryDreesRecord(dsKey, deptField, '11', yearField);
-      if (!rec) { addLog('⚠️', 'DREES (' + dsKey + ') : aucun enregistrement pour l\'Aude (champ « ' + deptField + ' »).'); continue; }
+      if (!rec) { addLog('⚠️', 'DREES (' + dsKey + ') : aucun enregistrement pour l\'Aude (champ « ' + deptField + ' »). Vérifiez que ce champ contient bien un CODE et non un libellé.'); continue; }
       recordByDs[dsKey] = rec;
+      addLog('ℹ️', 'DREES (' + dsKey + ') : trouvé via ' + deptField + '="' + rec[deptField] + '"' + (yearField ? ', ' + yearField + '=' + rec[yearField] : ''));
     } catch (e) {
       addLog('❌', 'DREES (' + dsKey + ') : erreur de connexion — ' + e.message);
     }
