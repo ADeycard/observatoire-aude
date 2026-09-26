@@ -1527,7 +1527,7 @@ async function loadDREES() {
   var dsUsed = {};
   DREES_RULES.forEach(function(r) { dsUsed[r.ds] = true; });
 
-  var rowsByDs = {}, labelFieldByDs = {}, yearFieldByDs = {};
+  var rowsByDs = {}, labelFieldByDs = {}, yearFieldByDs = {}, deptFieldByDs = {};
   for (var dsKey in dsUsed) {
     try {
       var fields = await getDreesFields(dsKey);
@@ -1543,7 +1543,7 @@ async function loadDREES() {
       var data = await r.json();
       var rows = data.results || [];
       if (!rows.length) { addLog('⚠️', 'DREES (' + dsKey + ') : 0 ligne pour l\'Aude (champ « ' + deptField + ' »).'); continue; }
-      rowsByDs[dsKey] = rows; labelFieldByDs[dsKey] = labelField; yearFieldByDs[dsKey] = yearField;
+      rowsByDs[dsKey] = rows; labelFieldByDs[dsKey] = labelField; yearFieldByDs[dsKey] = yearField; deptFieldByDs[dsKey] = deptField;
       addLog('ℹ️', 'DREES (' + dsKey + ') : format long détecté (colonnes « ' + labelField + ' » / « value »), ' + rows.length + ' lignes pour code_dep="11".');
       var uniqueLabels = Array.from(new Set(rows.map(function(r){ return r[labelField]; })));
       addLog('ℹ️', 'DREES (' + dsKey + ') : libellés disponibles → ' + uniqueLabels.join(' | '));
@@ -1552,17 +1552,60 @@ async function loadDREES() {
     }
   }
 
+  function computeStats(vals) {
+    if (!vals.length) return { n: 0 };
+    var s = vals.slice().sort(function(a, b) { return a - b; });
+    var n = s.length;
+    function q(p) { var pos = (n - 1) * p, b = Math.floor(pos), r = pos - b; return s[b + 1] !== undefined ? s[b] + r * (s[b + 1] - s[b]) : s[b]; }
+    return { n: n, mean: s.reduce(function(a, b) { return a + b; }, 0) / n, median: q(0.5), q1: q(0.25), q3: q(0.75) };
+  }
+  // Récupère la valeur des 95 autres départements pour un indicateur déjà identifié (même code_isd + même année),
+  // pour reconstituer moyenne/médiane/quartiles/rangs — sans quoi on n'a que la valeur brute de l'Aude.
+  async function fetchDreesComparatif(dsKey, deptField, codeIsd, yearField, annee) {
+    if (!codeIsd || !yearField || annee == null) return null;
+    try {
+      var url = DREES_BASE + DREES_RESOLVED_ID[dsKey] + '/records?where=' +
+        encodeURIComponent('code_isd="' + codeIsd + '" AND ' + yearField + '=' + annee) + '&limit=100';
+      var r = await fetch(url);
+      if (!r.ok) return null;
+      var data = await r.json();
+      var rows = data.results || [];
+      var snapMap = {};
+      rows.forEach(function(rr) {
+        var dc = rr[deptField], v = rr.value;
+        if (dc == null || v === null || v === undefined || v === '') return;
+        snapMap[dc] = typeof v === 'string' ? parseFloat(v.replace(',', '.')) : v;
+      });
+      return snapMap;
+    } catch (e) { return null; }
+  }
+
+  // Classe les départements d'un snap {dept: valeur} (rang 1 = valeur la plus haute), filtré
+  // optionnellement sur une liste de codes (Occitanie / Strate), et calcule les stats associées.
+  function statsAndRankFor(snapMap, deptFilter) {
+    var entries = Object.keys(snapMap)
+      .filter(function(d) { return !deptFilter || deptFilter.indexOf(d) >= 0; })
+      .map(function(d) { return { dept: d, val: snapMap[d] }; })
+      .filter(function(e) { return typeof e.val === 'number' && !isNaN(e.val); });
+    if (!entries.length) return { stats: { n: 0 }, rank: null, total: 0 };
+    var sorted = entries.slice().sort(function(a, b) { return b.val - a.val; });
+    var rank = null;
+    sorted.forEach(function(e, i) { if (e.dept === '11') rank = i + 1; });
+    return { stats: computeStats(entries.map(function(e) { return e.val; })), rank: rank, total: entries.length };
+  }
+
   if (typeof DREES_META === 'undefined') window.DREES_META = [];
   var prevIds = DREES_META.map(function(m) { return m.id; });
   var updated = 0;
 
-  DREES_RULES.forEach(function(rule) {
-    var rows = rowsByDs[rule.ds], labelField = labelFieldByDs[rule.ds], yearField = yearFieldByDs[rule.ds];
-    if (!rows) return;
+  for (var ri = 0; ri < DREES_RULES.length; ri++) {
+    var rule = DREES_RULES[ri];
+    var rows = rowsByDs[rule.ds], labelField = labelFieldByDs[rule.ds], yearField = yearFieldByDs[rule.ds], deptField = deptFieldByDs[rule.ds];
+    if (!rows) continue;
     var rec = bestDreesRow(rows, labelField, yearField, rule);
-    if (!rec) { addLog('⚠️', rule.id + ' : aucune ligne ne correspond parmi ' + rows.length + ' lignes.'); return; }
+    if (!rec) { addLog('⚠️', rule.id + ' : aucune ligne ne correspond parmi ' + rows.length + ' lignes.'); continue; }
     var val = rec.value;
-    if (val === null || val === undefined || val === '') { addLog('⚠️', rule.id + ' : ligne trouvée (« ' + rec[labelField] + ' ») mais valeur vide.'); return; }
+    if (val === null || val === undefined || val === '') { addLog('⚠️', rule.id + ' : ligne trouvée (« ' + rec[labelField] + ' ») mais valeur vide.'); continue; }
     var aude = typeof val === 'string' ? parseFloat(val.replace(',', '.')) : val;
     var annee = yearField ? rec[yearField] : null;
     var isNew = prevIds.indexOf(rule.id) < 0;
@@ -1578,10 +1621,24 @@ async function loadDREES() {
     entry.source = 'DREES — data.drees (direct, indicateur: ' + rec[labelField] + ')';
     entry.isNew = isNew;
     if (!existing) DREES_META.push(entry);
-    DREES_SNAP[rule.id] = { '11': aude };
+
+    var codeIsd = rec.code_isd;
+    var snapMap = codeIsd ? await fetchDreesComparatif(rule.ds, deptField, codeIsd, yearField, annee) : null;
+    if (snapMap && Object.keys(snapMap).length > 1) {
+      DREES_SNAP[rule.id] = snapMap;
+      var frRes = statsAndRankFor(snapMap, null);
+      var strRes = statsAndRankFor(snapMap, STRATE);
+      var occRes = statsAndRankFor(snapMap, OCC);
+      entry.stats_fr = frRes.stats; entry.rank_fr = frRes.rank; entry.total_fr = frRes.total; entry.fra = frRes.stats.mean;
+      entry.stats_strate = strRes.stats; entry.rank_strate = strRes.rank; entry.total_strate = strRes.total;
+      entry.stats_occ = occRes.stats; entry.rank_occ = occRes.rank; entry.total_occ = occRes.total; entry.occ = occRes.stats.mean;
+      addLog('✅', rule.id + ' (' + entry.label + ') : ' + aude + ' ' + (entry.unit || '') + ' — comparatif national sur ' + frRes.total + ' départements (moy. ' + entry.fra.toFixed(1) + '), année ' + annee, isNew);
+    } else {
+      DREES_SNAP[rule.id] = { '11': aude };
+      addLog('⚠️', rule.id + ' : valeur Aude récupérée (' + aude + ') mais comparatif national indisponible (code_isd absent ou 0 résultat) — pas de moyenne/rang cette fois-ci.');
+    }
     updated++;
-    addLog('✅', rule.id + ' (' + entry.label + ') : ' + aude + ' ' + (entry.unit || '') + ' — ' + entry.source + ', année ' + annee, isNew);
-  });
+  }
 
   addLog(updated ? '✅' : '⚠️', 'DREES : ' + updated + '/' + DREES_RULES.length + ' indicateurs mis à jour en direct.');
 }
